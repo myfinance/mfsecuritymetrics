@@ -1,0 +1,448 @@
+package de.hf.myfinance.securitymetrics.persistence.entities;
+
+import java.time.LocalDate;
+import java.util.Map;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import de.hf.myfinance.restmodel.RiskProfile;
+import de.hf.myfinance.restmodel.SecurityLifecyclePhase;
+
+
+@Document(collection = "SecurityMetrics")
+public class SecurityMetricsEntity {
+
+    @Id
+    private String id;
+    @Version
+    private Integer version;
+    @Indexed(unique = true)
+    String businesskey;
+    String description;
+    String currencyCode;
+    LocalDate fiscalEndDate;
+    SecurityLifecyclePhase securityLifecyclePhase;
+    RiskProfile riskProfile;
+    String sector;
+
+
+    // all values are yearly TTM values
+    //mandatory
+    Double price;
+    Double sharesOutstanding;
+    Double revenue;
+    Double eps;
+    Double freeCashflow;
+
+    //optional
+    Double totalAssets;
+    Double totalLiabilities;
+    Double dilutedEPS5Y;
+    Double dividendPerShare;
+    Double forwardFreeCashflow5YCAGR;
+    Double forwardPriceToSales;
+    Double beta;
+    Double tam;
+    Double forwardPE;
+    Double minForwardFCF10YCAGR;
+    Double avgForwardFCF10YCAGR;
+    Double maxForwardFCF10YCAGR;
+
+
+    //calculated
+    Double netIncome;
+    Double pe;
+    Double roa;
+    Double debtToAssets;
+    Double dividendYield;
+    Double dividendPayoutRatio;
+    Double intrinsicValue;
+    Double intrinsicValueMargin;
+    Double lynchScore;
+    Double avgHistoricalFCFGrowthRate;
+    Double revenueGrowthRate;
+
+    //historical map<fiscalaenddate, value>. fiscalaenddate is a Date, the values are TTM(trailing twelve month) values
+    Map<LocalDate, Double> historicalRevenue;
+    Map<LocalDate, Double> historicalNetIncome;
+    Map<LocalDate, Double> historicalFreeCashflow;
+
+    //ranks
+    Integer rankByPE;
+    Integer rankByRoA;
+    Integer rankByRoAAndPE;
+    Integer rankByIntrinsicValueMargin;
+    Integer rankByLynchScore;
+    Integer rankByLynchAndIntrinsicValueMargin;
+
+    public String getId() {
+        return this.id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+    
+    public String getBusinesskey() {
+        return this.businesskey;
+    }
+
+    public void setBusinesskey(String businesskey) {
+        this.businesskey = businesskey;
+    }
+
+    public String getCurrencyCode() {
+        return this.currencyCode;
+    }
+
+    public void setCurrencyCode(String currencyCode) {
+        this.currencyCode = currencyCode;
+    }
+
+    public LocalDate getFiscalEndDate() {
+        return this.fiscalEndDate;
+    }
+
+    public void setFiscalEndDate(LocalDate fiscalEndDate) {
+        this.fiscalEndDate = fiscalEndDate;
+    }
+
+    public SecurityLifecyclePhase getSecurityLifecyclePhase() {
+        return this.securityLifecyclePhase;
+    }
+
+    public void setSecurityLifecyclePhase(SecurityLifecyclePhase securityLifecyclePhase) {
+        this.securityLifecyclePhase = securityLifecyclePhase;
+    }
+
+    public RiskProfile getRiskProfile() {
+        return this.riskProfile;
+    }
+
+    public void setRiskProfile(RiskProfile riskProfile) {
+        this.riskProfile = riskProfile;
+    }
+
+    public String getSector() {
+        return this.sector;
+    }
+
+    public void setSector(String sector) {
+        this.sector = sector;
+    }
+
+    public Double getPrice() {
+        return this.price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public Double getSharesOutstanding() {
+        return this.sharesOutstanding;
+    }
+
+    public void setSharesOutstanding(Double sharesOutstanding) {
+        this.sharesOutstanding = sharesOutstanding;
+    }
+
+    public Double getRevenue() {
+        return this.revenue;
+    }
+
+    public void setRevenue(Double revenue) {
+        this.revenue = revenue;
+    }
+
+    public Double getEps() {
+        return this.eps;
+    }
+
+    public void setEps(Double eps) {
+        this.eps = eps;
+    }
+
+    public Double getFreeCashflow() {
+        return this.freeCashflow;
+    }
+
+    public void setFreeCashflow(Double freeCashflow) {
+        this.freeCashflow = freeCashflow;
+    }
+
+    public Double getTotalAssets() {
+        return this.totalAssets;
+    }
+
+    public void setTotalAssets(Double totalAssets) {
+        this.totalAssets = totalAssets;
+    }
+
+    public Double getTotalLiabilities() {
+        return this.totalLiabilities;
+    }
+
+    public void setTotalLiabilities(Double totalLiabilities) {
+        this.totalLiabilities = totalLiabilities;
+    }
+
+    public Double getDilutedEPS5Y() {
+        return this.dilutedEPS5Y;
+    }
+
+    public void setDilutedEPS5Y(Double dilutedEPS5Y) {
+        this.dilutedEPS5Y = dilutedEPS5Y;
+    }
+
+    public Double getDividendPerShare() {
+        return this.dividendPerShare;
+    }
+
+    public void setDividendPerShare(Double dividendPerShare) {
+        this.dividendPerShare = dividendPerShare;
+    }
+
+    public Double getForwardFreeCashflow5YCAGR() {
+        return this.forwardFreeCashflow5YCAGR;
+    }
+
+    public void setForwardFreeCashflow5YCAGR(Double forwardFreeCashflow5YCAGR) {
+        this.forwardFreeCashflow5YCAGR = forwardFreeCashflow5YCAGR;
+    }
+
+    public Double getForwardPriceToSales() {
+        return this.forwardPriceToSales;
+    }
+
+    public void setForwardPriceToSales(Double forwardPriceToSales) {
+        this.forwardPriceToSales = forwardPriceToSales;
+    }
+
+    public Double getBeta() {
+        return this.beta;
+    }
+
+    public void setBeta(Double beta) {
+        this.beta = beta;
+    }
+
+    public Double getTam() {
+        return this.tam;
+    }
+
+    public void setTam(Double tam) {
+        this.tam = tam;
+    }
+
+    public Double getForwardPE() {
+        return this.forwardPE;
+    }
+
+    public void setForwardPE(Double forwardPE) {
+        this.forwardPE = forwardPE;
+    }
+
+    public Double getMinForwardFCF10YCAGR() {
+        return this.minForwardFCF10YCAGR;
+    }
+
+    public void setMinForwardFCF10YCAGR(Double minForwardFCF10YCAGR) {
+        this.minForwardFCF10YCAGR = minForwardFCF10YCAGR;
+    }
+
+    public Double getAvgForwardFCF10YCAGR() {
+        return this.avgForwardFCF10YCAGR;
+    }
+
+    public void setAvgForwardFCF10YCAGR(Double avgForwardFCF10YCAGR) {
+        this.avgForwardFCF10YCAGR = avgForwardFCF10YCAGR;
+    }
+
+    public Double getMaxForwardFCF10YCAGR() {
+        return this.maxForwardFCF10YCAGR;
+    }
+
+    public void setMaxForwardFCF10YCAGR(Double maxForwardFCF10YCAGR) {
+        this.maxForwardFCF10YCAGR = maxForwardFCF10YCAGR;
+    }
+
+    public Double getNetIncome() {
+        return this.netIncome;
+    }
+
+    public void setNetIncome(Double netIncome) {
+        this.netIncome = netIncome;
+    }
+
+    public Double getPe() {
+        return this.pe;
+    }
+
+    public void setPe(Double pe) {
+        this.pe = pe;
+    }
+
+    public Double getRoa() {
+        return this.roa;
+    }
+
+    public void setRoa(Double roa) {
+        this.roa = roa;
+    }
+
+    public Double getDebtToAssets() {
+        return this.debtToAssets;
+    }
+
+    public void setDebtToAssets(Double debtToAssets) {
+        this.debtToAssets = debtToAssets;
+    }
+
+    public Double getDividendYield() {
+        return this.dividendYield;
+    }
+
+    public void setDividendYield(Double dividendYield) {
+        this.dividendYield = dividendYield;
+    }
+
+    public Double getDividendPayoutRatio() {
+        return this.dividendPayoutRatio;
+    }
+
+    public void setDividendPayoutRatio(Double dividendPayoutRatio) {
+        this.dividendPayoutRatio = dividendPayoutRatio;
+    }
+
+    public Double getIntrinsicValue() {
+        return this.intrinsicValue;
+    }
+
+    public void setIntrinsicValue(Double intrinsicValue) {
+        this.intrinsicValue = intrinsicValue;
+    }
+
+    public Double getIntrinsicValueMargin() {
+        return this.intrinsicValueMargin;
+    }
+
+    public void setIntrinsicValueMargin(Double intrinsicValueMargin) {
+        this.intrinsicValueMargin = intrinsicValueMargin;
+    }
+
+    public Double getLynchScore() {
+        return this.lynchScore;
+    }
+
+    public void setLynchScore(Double lynchScore) {
+        this.lynchScore = lynchScore;
+    }
+
+    public Double getAvgHistoricalFCFGrowthRate() {
+        return this.avgHistoricalFCFGrowthRate;
+    }
+
+    public void setAvgHistoricalFCFGrowthRate(Double avgHistoricalFCFGrowthRate) {
+        this.avgHistoricalFCFGrowthRate = avgHistoricalFCFGrowthRate;
+    }
+
+    public Double getRevenueGrowthRate() {
+        return this.revenueGrowthRate;
+    }
+
+    public void setRevenueGrowthRate(Double revenueGrowthRate) {
+        this.revenueGrowthRate = revenueGrowthRate;
+    }
+
+    public Map<LocalDate,Double> getHistoricalRevenue() {
+        return this.historicalRevenue;
+    }
+
+    public void setHistoricalRevenue(Map<LocalDate,Double> historicalRevenue) {
+        this.historicalRevenue = historicalRevenue;
+    }
+
+    public Map<LocalDate,Double> getHistoricalNetIncome() {
+        return this.historicalNetIncome;
+    }
+
+    public void setHistoricalNetIncome(Map<LocalDate,Double> historicalNetIncome) {
+        this.historicalNetIncome = historicalNetIncome;
+    }
+
+    public Map<LocalDate,Double> getHistoricalFreeCashflow() {
+        return this.historicalFreeCashflow;
+    }
+
+    public void setHistoricalFreeCashflow(Map<LocalDate,Double> historicalFreeCashflow) {
+        this.historicalFreeCashflow = historicalFreeCashflow;
+    }
+
+    public Integer getRankByPE() {
+        return this.rankByPE;
+    }
+
+    public void setRankByPE(Integer rankByPE) {
+        this.rankByPE = rankByPE;
+    }
+
+    public Integer getRankByRoA() {
+        return this.rankByRoA;
+    }
+
+    public void setRankByRoA(Integer rankByRoA) {
+        this.rankByRoA = rankByRoA;
+    }
+
+    public Integer getRankByRoAAndPE() {
+        return this.rankByRoAAndPE;
+    }
+
+    public void setRankByRoAAndPE(Integer rankByRoAAndPE) {
+        this.rankByRoAAndPE = rankByRoAAndPE;
+    }
+
+    public Integer getRankByIntrinsicValueMargin() {
+        return this.rankByIntrinsicValueMargin;
+    }
+
+    public void setRankByIntrinsicValueMargin(Integer rankByIntrinsicValueMargin) {
+        this.rankByIntrinsicValueMargin = rankByIntrinsicValueMargin;
+    }
+
+    public Integer getRankByLynchScore() {
+        return this.rankByLynchScore;
+    }
+
+    public void setRankByLynchScore(Integer rankByLynchScore) {
+        this.rankByLynchScore = rankByLynchScore;
+    }
+
+    public Integer getRankByLynchAndIntrinsicValueMargin() {
+        return this.rankByLynchAndIntrinsicValueMargin;
+    }
+
+    public void setRankByLynchAndIntrinsicValueMargin(Integer rankByLynchAndIntrinsicValueMargin) {
+        this.rankByLynchAndIntrinsicValueMargin = rankByLynchAndIntrinsicValueMargin;
+    }
+    
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+}

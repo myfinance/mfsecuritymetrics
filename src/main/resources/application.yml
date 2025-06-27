@@ -1,0 +1,73 @@
+server.port: 30035
+server.host: localhost
+# in case you want to run rabbitMq and keycloak on a dev server and not on your local machine like the software componentens(MFcomposite, mfinstrument...)
+#env.host: ${server.host}
+env:
+  host: 192.168.100.73
+logging:
+  level:
+    root: ERROR
+    de.hf.myfinance: DEBUG
+
+
+springdoc:
+  swagger-ui.path: /openapi/swagger-ui.html
+  api-docs.path: /openapi/v3/api-docs
+  packagesToScan: de.hf.myfinance
+  pathsToMatch: /**
+
+spring:
+  cloud:
+    function:
+      definition: saveSecurityMetricsProcessor;validateSecurityMetricsProcessor
+
+spring.cloud.stream:
+  defaultBinder: rabbit
+  default.contentType: application/json
+  bindings.saveSecurityMetricsProcessor-in-0:
+    destination: securityMetricsApproved
+    group: saveSecurityMetricsGroup
+  bindings.validateSecurityMetricsProcessor-in-0:
+    destination: validateSecurityMetricsRequest
+    group: validateSecurityMetricsGroup
+  bindings.saveInstrumentProcessor-in-0:
+    destination: instrumentApproved
+    group: instrumentssecurityMetricsGroup    
+  bindings.securityMetricsApproved-out-0:
+    destination: securityMetricsApproved
+    producer:
+      required-groups: saveSecurityMetricsGroup
+  bindings.mflog-out-0:
+    destination: logStream
+    producer:
+      required-groups: logPublisherGroup      
+
+
+spring.rabbitmq:
+  host: ${env.host}
+  port: 30021
+  username: user
+  password: vulkan
+
+spring.data.mongodb:
+  host: ${env.host}
+  port: 30023
+  database: securitymetrics-db
+  authentication-database: admin
+  username: root
+  password: vulkan
+
+api:
+
+  common:
+    version: 1.0.0
+    title: mfsecurityMetrics API
+    description: REST API for security metrics like revenue anad intrinsic value.
+
+  responseCodes:
+    ok.description: OK
+    badRequest.description: Bad Request, invalid format of the request. See response message for more information
+    notFound.description: Not found, the specified id does not exist
+    unprocessableEntity.description: Unprocessable entity, input parameters caused the processing to fail. See response message for more information
+
+
