@@ -19,7 +19,7 @@ springdoc:
 spring:
   cloud:
     function:
-      definition: saveSecurityMetricsProcessor;validateSecurityMetricsProcessor
+      definition: saveInstrumentProcessor;saveSecurityMetricsProcessor;validateSecurityMetricsProcessor
 
 spring.cloud.stream:
   defaultBinder: rabbit

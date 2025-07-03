@@ -2,11 +2,14 @@ package de.hf.myfinance.securitymetrics.service;
 
 import java.util.ArrayList;
 
+import org.springframework.stereotype.Component;
+
 import de.hf.myfinance.restmodel.SecurityMetrics;
 import de.hf.myfinance.securitymetrics.persistence.DataReader;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Component
 public class SecurityMetricsService {
     DataReader reader;
     public SecurityMetricsService(DataReader reader){
