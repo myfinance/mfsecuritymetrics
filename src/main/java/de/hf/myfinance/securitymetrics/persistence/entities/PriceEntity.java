@@ -15,6 +15,7 @@ public class PriceEntity {
     String businesskey;
 
     Double value;
+    String currency;
 
 
     public String getId() {
@@ -47,6 +48,13 @@ public class PriceEntity {
 
     public void setValue(Double value) {
         this.value = value;
+    }
+
+    public String getCurrency() {
+        return this.currency;
+    }
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
 }

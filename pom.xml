@@ -8,12 +8,12 @@
     <parent>
 		<groupId>de.hf.myfinance</groupId>
 		<artifactId>root</artifactId>
-        <version>0.24.0-alpha-99e540ede63c9017986d06830bdbc5ec994838bf</version>
+        <version>0.24.0-alpha-152342f79d9d52ac5371128b634ba92f4161722e</version>
 		<relativePath/> 
 	</parent>
     <properties>
         <NEXUS_URL>192.168.100.73:31001</NEXUS_URL>
-        <MFFrameWork.Version>0.24.0-alpha-99e540ede63c9017986d06830bdbc5ec994838bf</MFFrameWork.Version>
+        <MFFrameWork.Version>0.24.0-alpha-152342f79d9d52ac5371128b634ba92f4161722e</MFFrameWork.Version>
        <jib.container-name>holgerfischer/myfinance-mfsecuritymetrics:</jib.container-name>
    </properties>
 
