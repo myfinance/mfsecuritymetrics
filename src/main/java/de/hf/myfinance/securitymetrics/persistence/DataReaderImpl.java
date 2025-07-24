@@ -1,5 +1,6 @@
 package de.hf.myfinance.securitymetrics.persistence;
 
+import de.hf.myfinance.restmodel.EndOfDayPrice;
 import de.hf.myfinance.restmodel.Instrument;
 import de.hf.myfinance.restmodel.SecurityMetrics;
 import de.hf.myfinance.securitymetrics.persistence.repositories.InstrumentRepository;
@@ -41,9 +42,11 @@ public class DataReaderImpl implements DataReader{
     }
 
     @Override
-    public Mono<Double> findPriceByBusinesskey(String businesskey) {
+    public Mono<EndOfDayPrice> findPriceByBusinesskey(String businesskey) {
         return priceRepository.findByBusinesskey(businesskey)
-                .map(p->p.getValue());
+                .map(p->{
+                    return new EndOfDayPrice(p.getValue(), p.getCurrency());
+                });
     }
 
     @Override

@@ -39,6 +39,7 @@ public class SaveInstrumentProcessorConfig {
                     auditService.saveMessage("Create instrument with ID: "+ instrument.getBusinesskey(), Severity.INFO, AUDIT_MSG_TYPE);
                     if(instrument.getInstrumentType().equals(InstrumentType.EQUITY) ||instrument.getInstrumentType().equals(InstrumentType.CURRENCY)){
                         var instrumentEntity = instrumentMapper.apiToEntity(instrument);
+                        instrumentEntity.setAdditionalProperties(instrument.getAdditionalProperties());
                         instrumentRepository.deleteByBusinesskey(instrumentEntity.getBusinesskey()).then(instrumentRepository.save(instrumentEntity)).block();
                     }
                     break;

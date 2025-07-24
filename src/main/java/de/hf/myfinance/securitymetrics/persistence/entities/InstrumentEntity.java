@@ -1,6 +1,11 @@
 package de.hf.myfinance.securitymetrics.persistence.entities;
 
+import de.hf.myfinance.restmodel.AdditionalProperties;
 import de.hf.myfinance.restmodel.InstrumentType;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -21,6 +26,7 @@ public class InstrumentEntity implements java.io.Serializable {
     private String businesskey;
 
     private String description;
+    private Map<AdditionalProperties, String> additionalProperties = new HashMap<>();
 
 
     public InstrumentEntity() {
@@ -77,6 +83,13 @@ public class InstrumentEntity implements java.io.Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Map<AdditionalProperties, String> getAdditionalProperties() {
+        return additionalProperties;
+    }
+    public void setAdditionalProperties(Map<AdditionalProperties, String> additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
 
 }

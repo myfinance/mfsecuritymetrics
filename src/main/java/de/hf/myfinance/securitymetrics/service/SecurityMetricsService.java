@@ -1,11 +1,11 @@
 package de.hf.myfinance.securitymetrics.service;
 
 import java.util.ArrayList;
-import de.hf.myfinance.securitymetrics.persistence.DataReaderImpl;
 import org.springframework.stereotype.Component;
 
 import de.hf.framework.audit.AuditService;
 import de.hf.myfinance.exception.MFMsgKey;
+import de.hf.myfinance.restmodel.EndOfDayPrice;
 import de.hf.myfinance.restmodel.Instrument;
 import de.hf.myfinance.restmodel.InstrumentType;
 import de.hf.myfinance.restmodel.SecurityMetrics;
@@ -16,14 +16,12 @@ import reactor.core.publisher.Mono;
 @Component
 public class SecurityMetricsService {
 
-    private final DataReaderImpl dataReaderImpl;
-    DataReader reader;
+    private final DataReader reader;
     protected final AuditService auditService;
     protected static final String AUDIT_MSG_TYPE = "SecurityMetricsService_Event";
 
-    public SecurityMetricsService(DataReader reader, DataReaderImpl dataReaderImpl, AuditService auditService){
+    public SecurityMetricsService(DataReader reader, AuditService auditService){
         this.reader = reader;
-        this.dataReaderImpl = dataReaderImpl;
         this.auditService = auditService;
     }
 
@@ -56,16 +54,24 @@ public class SecurityMetricsService {
                 if(existingMetrics.getFiscalEndDate() != null && existingMetrics.getFiscalEndDate().isBefore(securityMetrics.getFiscalEndDate())) {
                     updatedSecurityMetrics = initSecurityMetrics(existingMetrics.getBusinesskey(), existingMetrics.getDescription());
                     updatedSecurityMetrics.setFiscalEndDate(securityMetrics.getFiscalEndDate());
-                    updatedSecurityMetrics.setCurrency(securityMetrics.getCurrency());
+                    updatedSecurityMetrics.setCurrencyKey(securityMetrics.getCurrencyKey());
                 }
-                if(!securityMetrics.getCurrency().equals(updatedSecurityMetrics.getCurrency())) {
+                if(!securityMetrics.getCurrencyKey().equals(updatedSecurityMetrics.getCurrencyKey())) {
                     return auditService.handleMonoError("Currency does not match for instrument:"+existingMetrics.getDescription(), AUDIT_MSG_TYPE, MFMsgKey.ILLEGAL_ARGUMENTS).cast(SecurityMetrics.class);
                 }
                 return Mono.just(updateBaseValues(updatedSecurityMetrics, securityMetrics));
-            });
+            })
+            .flatMap(this::loadPriceAndCurrency)
+            .flatMap(this::calcSecurityMetrics)
+            .flatMap(this::saveSecurityMetrics);
     }
 
-
+    private Mono<SecurityMetrics> calcSecurityMetrics(SecurityMetrics securityMetrics) {
+        if(securityMetrics.getCapitalExpenditures() != null && securityMetrics.getOperatingCashflow() != null) {
+            securityMetrics.setFreeCashflow(securityMetrics.getOperatingCashflow() - securityMetrics.getCapitalExpenditures());
+        }
+        return Mono.just(securityMetrics);
+    }
 
     private Mono<SecurityMetrics> loadSecurityMetrics(Instrument instrument) {
         return reader.findSecurityMetricsByBusinesskey(instrument.getBusinesskey())
@@ -130,11 +136,64 @@ public class SecurityMetricsService {
         return updatedSecurityMetrics;
     }
 
-    private void saveSecurityMetrics(SecurityMetrics securityMetrics) {
+    private Mono<SecurityMetrics> saveSecurityMetrics(SecurityMetrics securityMetrics) {
         if(securityMetrics.getBusinesskey() != null && !securityMetrics.getBusinesskey().isEmpty()
             && securityMetrics.getFiscalEndDate() != null) {
             
         }
+        return Mono.just(securityMetrics);
+    }
 
+    private Mono<SecurityMetrics> loadPriceAndCurrency(SecurityMetrics securityMetrics) {
+        return reader.findPriceByBusinesskey(securityMetrics.getBusinesskey())
+            .flatMap(price -> setPrice(securityMetrics, price));
+    }
+
+
+
+    private Mono<Double> convertCurrency(Double value, String fromCurrency, String toCurrency) {
+        if (fromCurrency.equals(toCurrency)) {
+            return Mono.just(value);
+        }
+        
+        Mono<Double> fromCurrencyInEur = reader.findPriceByBusinesskey(fromCurrency)
+            .map(price -> price.getValue())
+            .switchIfEmpty(auditService.handleMonoError("No price found for currency:"+fromCurrency, AUDIT_MSG_TYPE, MFMsgKey.UNKNOWN_INSTRUMENT_EXCEPTION).cast(Double.class));
+
+        Mono<Double> toCurrencyInEur = Mono.just(1.0);
+        if(!toCurrency.equals("EUR")) {
+            toCurrencyInEur = reader.findPriceByBusinesskey(toCurrency)
+                .map(price -> price.getValue())
+                .switchIfEmpty(auditService.handleMonoError("No price found for currency:"+toCurrency, AUDIT_MSG_TYPE, MFMsgKey.UNKNOWN_INSTRUMENT_EXCEPTION).cast(Double.class));
+        }
+
+
+        return fromCurrencyInEur.zipWith(toCurrencyInEur, (from, to) -> (value * from) / to);
+    }
+
+    private Mono<SecurityMetrics> setPrice(SecurityMetrics securityMetrics, EndOfDayPrice price) {
+        if(securityMetrics.getCurrencyKey().equals(price.getCurrencyKey())){
+            securityMetrics.setPrice(price.getValue());
+        } else {
+            convertCurrency(price.getValue(), price.getCurrencyKey(), securityMetrics.getCurrencyKey())
+                .map(convertedValue -> {
+                    securityMetrics.setPrice(convertedValue);
+                    return securityMetrics;
+                });
+        }
+
+        return reader.findInstrumentByBusinesskey(price.getCurrencyKey())
+            .flatMap(currency -> {
+                if(currency.getDescription().equals("Euro")) {
+                    securityMetrics.setPriceInEuro(price.getValue());
+                } else {
+                    convertCurrency(price.getValue(), price.getCurrencyKey(), "EUR")
+                        .map(convertedValue -> {
+                            securityMetrics.setPriceInEuro(convertedValue);
+                            return securityMetrics;
+                        });
+                }
+                return Mono.just(securityMetrics);
+            });
     }
 }
