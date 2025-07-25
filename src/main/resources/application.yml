@@ -59,6 +59,7 @@ spring.data.mongodb:
   authentication-database: admin
   username: root
   password: vulkan
+  auto-index-creation: true
 
 api:
 

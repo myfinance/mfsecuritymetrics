@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Component;
 
 import de.hf.framework.audit.AuditService;
+import de.hf.framework.audit.Severity;
 import de.hf.myfinance.exception.MFMsgKey;
 import de.hf.myfinance.restmodel.EndOfDayPrice;
 import de.hf.myfinance.restmodel.Instrument;
 import de.hf.myfinance.restmodel.InstrumentType;
 import de.hf.myfinance.restmodel.SecurityMetrics;
+import de.hf.myfinance.securitymetrics.events.out.SecurityMetricsApprovedEventHandler;
 import de.hf.myfinance.securitymetrics.persistence.DataReader;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,11 +21,15 @@ public class SecurityMetricsService {
     private final DataReader reader;
     protected final AuditService auditService;
     protected static final String AUDIT_MSG_TYPE = "SecurityMetricsService_Event";
-
-    public SecurityMetricsService(DataReader reader, AuditService auditService){
+    private final SecurityMetricsApprovedEventHandler eventHandler;
+    
+    public SecurityMetricsService(DataReader reader, AuditService auditService, SecurityMetricsApprovedEventHandler eventHandler){
         this.reader = reader;
         this.auditService = auditService;
+        this.eventHandler = eventHandler;
     }
+
+
 
     
     public Flux<SecurityMetrics> getSecurityMetrics(){
@@ -39,7 +45,7 @@ public class SecurityMetricsService {
     }
 
     public Mono<SecurityMetrics> validateSecurityMetrics(SecurityMetrics securityMetrics) {
-        return loadInstrument(securityMetrics.getBusinesskey())
+        return loadInstrument(securityMetrics)
             .flatMap(this::loadSecurityMetrics)
             .flatMap(existingMetrics -> {
                 var updatedSecurityMetrics = existingMetrics;
@@ -52,9 +58,7 @@ public class SecurityMetricsService {
                 }
                 //the existing metrics are out of date
                 if(existingMetrics.getFiscalEndDate() != null && existingMetrics.getFiscalEndDate().isBefore(securityMetrics.getFiscalEndDate())) {
-                    updatedSecurityMetrics = initSecurityMetrics(existingMetrics.getBusinesskey(), existingMetrics.getDescription());
-                    updatedSecurityMetrics.setFiscalEndDate(securityMetrics.getFiscalEndDate());
-                    updatedSecurityMetrics.setCurrencyKey(securityMetrics.getCurrencyKey());
+                    updatedSecurityMetrics = initSecurityMetrics(existingMetrics);
                 }
                 if(!securityMetrics.getCurrencyKey().equals(updatedSecurityMetrics.getCurrencyKey())) {
                     return auditService.handleMonoError("Currency does not match for instrument:"+existingMetrics.getDescription(), AUDIT_MSG_TYPE, MFMsgKey.ILLEGAL_ARGUMENTS).cast(SecurityMetrics.class);
@@ -73,26 +77,29 @@ public class SecurityMetricsService {
         return Mono.just(securityMetrics);
     }
 
-    private Mono<SecurityMetrics> loadSecurityMetrics(Instrument instrument) {
-        return reader.findSecurityMetricsByBusinesskey(instrument.getBusinesskey())
-                .switchIfEmpty(Mono.just(initSecurityMetrics(instrument.getBusinesskey(), instrument.getDescription())));
+    private Mono<SecurityMetrics> loadSecurityMetrics(SecurityMetrics securityMetrics) {
+        return reader.findSecurityMetricsByBusinesskey(securityMetrics.getBusinesskey())
+                .switchIfEmpty(Mono.just(initSecurityMetrics(securityMetrics)));
     }
 
-    private SecurityMetrics initSecurityMetrics(String businesskey, String description) {
+    private SecurityMetrics initSecurityMetrics(SecurityMetrics newSecurityMetrics) {
         SecurityMetrics securityMetrics = new SecurityMetrics();
-        securityMetrics.setBusinesskey(businesskey);
-        securityMetrics.setDescription(description);
+        securityMetrics.setBusinesskey(newSecurityMetrics.getBusinesskey());
+        securityMetrics.setDescription(newSecurityMetrics.getDescription());
+        securityMetrics.setFiscalEndDate(newSecurityMetrics.getFiscalEndDate());
+        securityMetrics.setCurrencyKey(newSecurityMetrics.getCurrencyKey());
         return securityMetrics;
     }
 
-    private Mono<Instrument> loadInstrument(String businesskey) {
-        return this.reader.findInstrumentByBusinesskey(businesskey)
-                .switchIfEmpty(handleNotExistingInstrument(businesskey))
+    private Mono<SecurityMetrics> loadInstrument(SecurityMetrics securityMetrics) {
+        return this.reader.findInstrumentByBusinesskey(securityMetrics.getBusinesskey())
+                .switchIfEmpty(handleNotExistingInstrument(securityMetrics.getBusinesskey()))
                 .flatMap(instrument -> {
                     if(instrument.getInstrumentType().equals(InstrumentType.EQUITY)) {
-                        return Mono.just(instrument);
+                        securityMetrics.setDescription(instrument.getDescription());
+                        return Mono.just(securityMetrics);
                     }
-                    return handleWrongInstrumentType(instrument);
+                    return handleWrongInstrumentType(securityMetrics.getDescription());
                 });
     }
 
@@ -100,8 +107,8 @@ public class SecurityMetricsService {
         return auditService.handleMonoError("Instrument for businesskey:"+businesskey + " does not exists.", AUDIT_MSG_TYPE, MFMsgKey.UNKNOWN_INSTRUMENT_EXCEPTION).cast(Instrument.class);
     }
 
-    private Mono<Instrument> handleWrongInstrumentType(Instrument instrument){
-        return auditService.handleMonoError("Instrumenttyp of :"+instrument.getDescription() + " is not Equity.", AUDIT_MSG_TYPE, MFMsgKey.WRONG_INSTRUMENTTYPE_EXCEPTION).cast(Instrument.class);
+    private Mono<SecurityMetrics> handleWrongInstrumentType(String instrumentdesc){
+        return auditService.handleMonoError("Instrumenttyp of :"+instrumentdesc + " is not Equity.", AUDIT_MSG_TYPE, MFMsgKey.WRONG_INSTRUMENTTYPE_EXCEPTION).cast(SecurityMetrics.class);
     }
 
     private SecurityMetrics updateBaseValues(SecurityMetrics updatedSecurityMetrics, SecurityMetrics newSecurityMetrics) {
@@ -137,10 +144,8 @@ public class SecurityMetricsService {
     }
 
     private Mono<SecurityMetrics> saveSecurityMetrics(SecurityMetrics securityMetrics) {
-        if(securityMetrics.getBusinesskey() != null && !securityMetrics.getBusinesskey().isEmpty()
-            && securityMetrics.getFiscalEndDate() != null) {
-            
-        }
+        auditService.saveMessage("SecurityMetrics validated:businesskey=" + securityMetrics.getBusinesskey() + " desc=" + securityMetrics.getDescription(), Severity.INFO, AUDIT_MSG_TYPE);
+        eventHandler.sendInstrumentApprovedEvent(securityMetrics);
         return Mono.just(securityMetrics);
     }
 
