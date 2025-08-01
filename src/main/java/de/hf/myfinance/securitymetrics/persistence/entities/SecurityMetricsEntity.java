@@ -1,6 +1,7 @@
 package de.hf.myfinance.securitymetrics.persistence.entities;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.data.annotation.Id;
@@ -22,20 +23,26 @@ public class SecurityMetricsEntity {
     @Indexed(unique = true)
     String businesskey;
     String description;
+    // the currency code of the security, e.g. EUR, USD, GBP just for display purposes
     String currencyCode;
+    //the businesskey of the currency to identify the value curve of the currency and calculate the price in Euro
+    String currencyKey;
     LocalDate fiscalEndDate;
     SecurityLifecyclePhase securityLifecyclePhase;
     RiskProfile riskProfile;
     String sector;
+    LocalDateTime lastUpdateTs;
 
 
     // all values are yearly TTM values
     //mandatory
     Double price;
+    Double priceInEuro;
     Double sharesOutstanding;
     Double revenue;
-    Double eps;
-    Double freeCashflow;
+    Double capitalExpenditures;
+    Double operatingCashflow;
+    Double netIncome;
 
     //optional
     Double totalAssets;
@@ -50,10 +57,11 @@ public class SecurityMetricsEntity {
     Double minForwardFCF10YCAGR;
     Double avgForwardFCF10YCAGR;
     Double maxForwardFCF10YCAGR;
+    
 
 
     //calculated
-    Double netIncome;
+    Double freeCashflow;
     Double pe;
     Double roa;
     Double debtToAssets;
@@ -64,6 +72,7 @@ public class SecurityMetricsEntity {
     Double lynchScore;
     Double avgHistoricalFCFGrowthRate;
     Double revenueGrowthRate;
+    Double eps;
 
     //historical map<fiscalaenddate, value>. fiscalaenddate is a Date, the values are TTM(trailing twelve month) values
     Map<LocalDate, Double> historicalRevenue;
@@ -443,6 +452,14 @@ public class SecurityMetricsEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public LocalDateTime getLastUpdateTs() {
+        return this.lastUpdateTs;
+    }
+
+    public void setLastUpdateTs(LocalDateTime lastUpdateTs) {
+        this.lastUpdateTs = lastUpdateTs;
     }
 
 }
