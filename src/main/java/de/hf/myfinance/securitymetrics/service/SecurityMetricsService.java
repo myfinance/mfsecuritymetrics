@@ -143,6 +143,12 @@ public class SecurityMetricsService {
         if(newSecurityMetrics.getDividendPerShare() != null) {
             updatedSecurityMetrics.setDividendPerShare(newSecurityMetrics.getDividendPerShare());
         }
+        if(newSecurityMetrics.getSector() != null) {
+            updatedSecurityMetrics.setSector(newSecurityMetrics.getSector());
+        }
+        if(newSecurityMetrics.getBeta() != null) {
+            updatedSecurityMetrics.setBeta(newSecurityMetrics.getBeta());
+        }
         return updatedSecurityMetrics;
     }
 
