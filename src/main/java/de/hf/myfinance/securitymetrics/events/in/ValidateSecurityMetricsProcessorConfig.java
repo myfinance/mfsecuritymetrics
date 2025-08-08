@@ -23,11 +23,11 @@ public class ValidateSecurityMetricsProcessorConfig {
     }
 
     @Bean
-    public Consumer<Event<String, SecurityMetrics>> validateSecurityMetricsRequest() {
+    public Consumer<Event<String, SecurityMetrics>> validateSecurityMetricsRequestProcessor() {
         return event -> {
             auditService.saveMessage("Process validateSecurityMetricsRequest in SecurityMetricsservice. message created at " + event.getEventCreatedAt(), Severity.DEBUG, AUDIT_MSG_TYPE);
             if (event.getEventType() == Event.Type.CREATE) {
-                securityMetricsService.validateSecurityMetrics(event.getData());
+                securityMetricsService.validateSecurityMetrics(event.getData()).block();
             } else {
                 String errorMessage = "Incorrect event type: " + event.getEventType() + ", expected a Create event";
                 auditService.saveMessage(errorMessage, Severity.WARN, AUDIT_MSG_TYPE);

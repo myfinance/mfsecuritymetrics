@@ -19,7 +19,7 @@ springdoc:
 spring:
   cloud:
     function:
-      definition: saveInstrumentProcessor;saveSecurityMetricsProcessor;validateSecurityMetricsRequest;newEndOfDayPriceProcessor;validateImportedSecurityMetricsRequestProcessor
+      definition: saveInstrumentProcessor;validateImportedSecurityMetricsRequestProcessor;saveSecurityMetricsProcessor;validateSecurityMetricsRequestProcessor;newEndOfDayPriceProcessor
 
 spring.cloud.stream:
   defaultBinder: rabbit
@@ -27,10 +27,10 @@ spring.cloud.stream:
   bindings.saveSecurityMetricsProcessor-in-0:
     destination: securityMetricsApproved
     group: saveSecurityMetricsGroup
-  bindings.validateSecurityMetricsRequest-in-0:
+  bindings.validateSecurityMetricsRequestProcessor-in-0:
     destination: validateSecurityMetricsRequest
     group: validateSecurityMetricsGroup
-  bindings.validateImportedSecurityMetricsRequest-in-0:
+  bindings.validateImportedSecurityMetricsRequestProcessor-in-0:
     destination: securitymetricsupdated
     group: validateImportedSecuritymetricsGroup
   bindings.saveInstrumentProcessor-in-0:

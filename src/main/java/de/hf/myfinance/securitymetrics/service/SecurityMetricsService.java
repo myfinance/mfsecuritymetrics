@@ -60,8 +60,11 @@ public class SecurityMetricsService {
                 if(existingMetrics.getFiscalEndDate() != null && existingMetrics.getFiscalEndDate().isBefore(securityMetrics.getFiscalEndDate())) {
                     updatedSecurityMetrics = initSecurityMetrics(existingMetrics);
                 }
-                if(!securityMetrics.getCurrencyKey().equals(updatedSecurityMetrics.getCurrencyKey())) {
-                    return auditService.handleMonoError("Currency does not match for instrument:"+existingMetrics.getDescription(), AUDIT_MSG_TYPE, MFMsgKey.ILLEGAL_ARGUMENTS).cast(SecurityMetrics.class);
+                if(securityMetrics.getCurrencyKey()==null || securityMetrics.getCurrencyKey().isEmpty()) {
+                    return auditService.handleMonoError("CurrencyKey is not allowed to be empty:"+existingMetrics.getDescription(), AUDIT_MSG_TYPE, MFMsgKey.ILLEGAL_ARGUMENTS).cast(SecurityMetrics.class);
+                }
+                if(!securityMetrics.getCurrencyKey().equals(existingMetrics.getCurrencyKey())){
+                    updatedSecurityMetrics = initSecurityMetrics(existingMetrics);
                 }
                 return Mono.just(updateBaseValues(updatedSecurityMetrics, securityMetrics));
             })
@@ -151,6 +154,7 @@ public class SecurityMetricsService {
 
     private Mono<SecurityMetrics> loadPriceAndCurrency(SecurityMetrics securityMetrics) {
         return reader.findPriceByBusinesskey(securityMetrics.getBusinesskey())
+            .switchIfEmpty(Mono.just(new EndOfDayPrice(0.0, securityMetrics.getCurrencyKey())))
             .flatMap(price -> setPrice(securityMetrics, price));
     }
 
