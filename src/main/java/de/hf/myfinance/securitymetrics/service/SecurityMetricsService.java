@@ -1,5 +1,7 @@
 package de.hf.myfinance.securitymetrics.service;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import org.springframework.stereotype.Component;
 
@@ -149,10 +151,12 @@ public class SecurityMetricsService {
         if(newSecurityMetrics.getBeta() != null) {
             updatedSecurityMetrics.setBeta(newSecurityMetrics.getBeta());
         }
+        
         return updatedSecurityMetrics;
     }
 
     private Mono<SecurityMetrics> saveSecurityMetrics(SecurityMetrics securityMetrics) {
+        securityMetrics.setLastUpdateTs(LocalDateTime.now());
         auditService.saveMessage("SecurityMetrics validated:businesskey=" + securityMetrics.getBusinesskey() + " desc=" + securityMetrics.getDescription(), Severity.INFO, AUDIT_MSG_TYPE);
         eventHandler.sendInstrumentApprovedEvent(securityMetrics);
         return Mono.just(securityMetrics);
