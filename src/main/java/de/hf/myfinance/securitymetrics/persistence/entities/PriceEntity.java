@@ -1,5 +1,7 @@
 package de.hf.myfinance.securitymetrics.persistence.entities;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -12,10 +14,10 @@ public class PriceEntity {
     @Version
     private Integer version;
     @Indexed(unique = true)
-    String businesskey;
+    private String businesskey;
 
-    Double value;
-    String currency;
+    private Double value;
+    private String currency;
 
 
     public String getId() {
@@ -56,5 +58,6 @@ public class PriceEntity {
     public void setCurrency(String currency) {
         this.currency = currency;
     }
+
 
 }

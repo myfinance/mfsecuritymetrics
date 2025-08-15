@@ -1,6 +1,5 @@
 package de.hf.myfinance.securitymetrics.service;
 
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import org.springframework.stereotype.Component;
@@ -24,6 +23,8 @@ public class SecurityMetricsService {
     protected final AuditService auditService;
     protected static final String AUDIT_MSG_TYPE = "SecurityMetricsService_Event";
     private final SecurityMetricsApprovedEventHandler eventHandler;
+
+    private static final Double DISCOUNTFACTOR = 1.1;
     
     public SecurityMetricsService(DataReader reader, AuditService auditService, SecurityMetricsApprovedEventHandler eventHandler){
         this.reader = reader;
@@ -93,6 +94,7 @@ public class SecurityMetricsService {
         securityMetrics.setDescription(newSecurityMetrics.getDescription());
         securityMetrics.setFiscalEndDate(newSecurityMetrics.getFiscalEndDate());
         securityMetrics.setCurrencyKey(newSecurityMetrics.getCurrencyKey());
+        securityMetrics.setCurrencyCode(newSecurityMetrics.getCurrencyCode());
         return securityMetrics;
     }
 
@@ -117,7 +119,6 @@ public class SecurityMetricsService {
     }
 
     private SecurityMetrics updateBaseValues(SecurityMetrics updatedSecurityMetrics, SecurityMetrics newSecurityMetrics) {
-
         if(newSecurityMetrics.getCapitalExpenditures() != null) {
             updatedSecurityMetrics.setCapitalExpenditures(newSecurityMetrics.getCapitalExpenditures());
         }
