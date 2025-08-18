@@ -68,19 +68,13 @@ public class SecurityMetricsService {
                 }
                 if(!securityMetrics.getCurrencyKey().equals(existingMetrics.getCurrencyKey())){
                     updatedSecurityMetrics = initSecurityMetrics(existingMetrics);
+                    setStaticSecurityMetrics(updatedSecurityMetrics, existingMetrics);
                 }
                 return Mono.just(updateBaseValues(updatedSecurityMetrics, securityMetrics));
             })
             .flatMap(this::loadPriceAndCurrency)
             .flatMap(this::calcSecurityMetrics)
             .flatMap(this::saveSecurityMetrics);
-    }
-
-    private Mono<SecurityMetrics> calcSecurityMetrics(SecurityMetrics securityMetrics) {
-        if(securityMetrics.getCapitalExpenditures() != null && securityMetrics.getOperatingCashflow() != null) {
-            securityMetrics.setFreeCashflow(securityMetrics.getOperatingCashflow() - securityMetrics.getCapitalExpenditures());
-        }
-        return Mono.just(securityMetrics);
     }
 
     private Mono<SecurityMetrics> loadSecurityMetrics(SecurityMetrics securityMetrics) {
@@ -96,6 +90,16 @@ public class SecurityMetricsService {
         securityMetrics.setCurrencyKey(newSecurityMetrics.getCurrencyKey());
         securityMetrics.setCurrencyCode(newSecurityMetrics.getCurrencyCode());
         return securityMetrics;
+    }
+
+    private SecurityMetrics setStaticSecurityMetrics(SecurityMetrics target, SecurityMetrics src) {
+        if(src.getAvgMarktcapFreeCashflowRatio() != null) {
+            target.setAvgMarktcapFreeCashflowRatio(src.getAvgMarktcapFreeCashflowRatio());
+        }
+        if(src.getExpectedCashflowGrowth() != null) {
+            target.setExpectedCashflowGrowth(src.getExpectedCashflowGrowth());
+        }
+        return target;
     }
 
     private Mono<SecurityMetrics> loadInstrument(SecurityMetrics securityMetrics) {
@@ -152,14 +156,45 @@ public class SecurityMetricsService {
         if(newSecurityMetrics.getBeta() != null) {
             updatedSecurityMetrics.setBeta(newSecurityMetrics.getBeta());
         }
-        if(newSecurityMetrics.getAvgMarktcapFreeCashflowRatio() != null) {
-            updatedSecurityMetrics.setAvgMarktcapFreeCashflowRatio(newSecurityMetrics.getAvgMarktcapFreeCashflowRatio());
+        setStaticSecurityMetrics(updatedSecurityMetrics, newSecurityMetrics);
+        return updatedSecurityMetrics;
+    }
+
+    private Mono<SecurityMetrics> calcSecurityMetrics(SecurityMetrics securityMetrics) {
+        if(securityMetrics.getCapitalExpenditures() != null && securityMetrics.getOperatingCashflow() != null) {
+            securityMetrics.setFreeCashflow(securityMetrics.getOperatingCashflow() - securityMetrics.getCapitalExpenditures());
         }
-        if(newSecurityMetrics.getExpectedCashflowGrowth() != null) {
-            updatedSecurityMetrics.setExpectedCashflowGrowth(newSecurityMetrics.getExpectedCashflowGrowth());
+        securityMetrics = calcIntrinsicValuePerShare(securityMetrics);
+        if(securityMetrics.getPrice() != null 
+            && securityMetrics.getPrice() != 0.0
+            && securityMetrics.getIntrinsicValue() != null) {
+            securityMetrics.setIntrinsicValueMargin((securityMetrics.getIntrinsicValue() -securityMetrics.getPrice())/securityMetrics.getPrice());
         }
         
-        return updatedSecurityMetrics;
+        return Mono.just(securityMetrics);
+    }
+
+    private SecurityMetrics calcIntrinsicValuePerShare(SecurityMetrics securityMetrics) {
+        if(securityMetrics.getFreeCashflow() == null || securityMetrics.getSharesOutstanding() == null || securityMetrics.getExpectedCashflowGrowth() == null) {
+            return securityMetrics;
+        }
+        Double discountFaktor = securityMetrics.getExpectedCashflowGrowth()/DISCOUNTFACTOR;
+        Double sumOfDiscountedFreecashflows = discount(discountFaktor, securityMetrics.getFreeCashflow(), 10);
+        Double marketcapIn10Y = securityMetrics.getFreeCashflow() 
+            * Math.pow(discountFaktor, 10)
+            * securityMetrics.getAvgMarktcapFreeCashflowRatio();
+        double intrinsicValue = (sumOfDiscountedFreecashflows + marketcapIn10Y) / securityMetrics.getSharesOutstanding();
+        securityMetrics.setIntrinsicValue(intrinsicValue);
+        return securityMetrics;
+    }
+
+    private double discount(double faktor, double value, int years) {
+        double result = 0.0;
+        for(int exponent = 1; exponent <= years; exponent++) {
+            result += Math.pow(faktor, exponent);
+            exponent++;
+        }
+        return value* result;
     }
 
     private Mono<SecurityMetrics> saveSecurityMetrics(SecurityMetrics securityMetrics) {
