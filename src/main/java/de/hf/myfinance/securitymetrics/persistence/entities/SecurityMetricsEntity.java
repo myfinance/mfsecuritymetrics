@@ -58,7 +58,13 @@ public class SecurityMetricsEntity {
     Double avgForwardFCF10YCAGR;
     Double maxForwardFCF10YCAGR;
     
-
+    //config
+    Double avgMarktcapFreeCashflowRatio;
+    //durchschnitt in den nächsten 10 Jahren erwartetes Wachstum des Free Cashflows
+    //this is used to calculate the intrinsic value
+    //it is the average of next 10 years of the FreeCashflow growth rate
+    // notation e.g. 1.4 means 40% growth
+    Double expectedCashflowGrowth;
 
     //calculated
     Double freeCashflow;
@@ -460,6 +466,56 @@ public class SecurityMetricsEntity {
 
     public void setLastUpdateTs(LocalDateTime lastUpdateTs) {
         this.lastUpdateTs = lastUpdateTs;
+    }
+
+
+    public String getCurrencyKey() {
+        return this.currencyKey;
+    }
+
+    public void setCurrencyKey(String currencyKey) {
+        this.currencyKey = currencyKey;
+    }
+
+    public Double getPriceInEuro() {
+        return this.priceInEuro;
+    }
+
+    public void setPriceInEuro(Double priceInEuro) {
+        this.priceInEuro = priceInEuro;
+    }
+
+    public Double getCapitalExpenditures() {
+        return this.capitalExpenditures;
+    }
+
+    public void setCapitalExpenditures(Double capitalExpenditures) {
+        this.capitalExpenditures = capitalExpenditures;
+    }
+
+    public Double getOperatingCashflow() {
+        return this.operatingCashflow;
+    }
+
+    public void setOperatingCashflow(Double operatingCashflow) {
+        this.operatingCashflow = operatingCashflow;
+    }
+     
+
+    public Double getAvgMarktcapFreeCashflowRatio() {
+        return this.avgMarktcapFreeCashflowRatio;
+    }
+
+    public void setAvgMarktcapFreeCashflowRatio(Double avgMarktcapFreeCashflowRatio) {
+        this.avgMarktcapFreeCashflowRatio = avgMarktcapFreeCashflowRatio;
+    }
+
+    public Double getExpectedCashflowGrowth() {
+        return this.expectedCashflowGrowth;
+    }
+
+    public void setExpectedCashflowGrowth(Double expectedCashflowGrowth) {
+        this.expectedCashflowGrowth = expectedCashflowGrowth;
     }
 
 }

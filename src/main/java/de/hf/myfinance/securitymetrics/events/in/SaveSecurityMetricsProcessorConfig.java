@@ -3,12 +3,8 @@ package de.hf.myfinance.securitymetrics.events.in;
 import de.hf.framework.audit.AuditService;
 import de.hf.framework.audit.Severity;
 import de.hf.myfinance.event.Event;
-import de.hf.myfinance.restmodel.Instrument;
-import de.hf.myfinance.restmodel.InstrumentType;
 import de.hf.myfinance.restmodel.SecurityMetrics;
-import de.hf.myfinance.securitymetrics.persistence.InstrumentMapper;
 import de.hf.myfinance.securitymetrics.persistence.SecurityMetricsMapper;
-import de.hf.myfinance.securitymetrics.persistence.repositories.InstrumentRepository;
 import de.hf.myfinance.securitymetrics.persistence.repositories.SecurityMetricsRepository;
 
 import org.springframework.context.annotation.Bean;

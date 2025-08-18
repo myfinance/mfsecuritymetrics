@@ -152,6 +152,12 @@ public class SecurityMetricsService {
         if(newSecurityMetrics.getBeta() != null) {
             updatedSecurityMetrics.setBeta(newSecurityMetrics.getBeta());
         }
+        if(newSecurityMetrics.getAvgMarktcapFreeCashflowRatio() != null) {
+            updatedSecurityMetrics.setAvgMarktcapFreeCashflowRatio(newSecurityMetrics.getAvgMarktcapFreeCashflowRatio());
+        }
+        if(newSecurityMetrics.getExpectedCashflowGrowth() != null) {
+            updatedSecurityMetrics.setExpectedCashflowGrowth(newSecurityMetrics.getExpectedCashflowGrowth());
+        }
         
         return updatedSecurityMetrics;
     }
@@ -201,19 +207,6 @@ public class SecurityMetricsService {
                     return securityMetrics;
                 });
         }
-
-        return reader.findInstrumentByBusinesskey(price.getCurrencyKey())
-            .flatMap(currency -> {
-                if(currency.getDescription().equals("Euro")) {
-                    securityMetrics.setPriceInEuro(price.getValue());
-                } else {
-                    convertCurrency(price.getValue(), price.getCurrencyKey(), "EUR")
-                        .map(convertedValue -> {
-                            securityMetrics.setPriceInEuro(convertedValue);
-                            return securityMetrics;
-                        });
-                }
-                return Mono.just(securityMetrics);
-            });
+        return Mono.just(securityMetrics);
     }
 }
