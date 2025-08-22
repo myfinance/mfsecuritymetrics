@@ -8,6 +8,7 @@ import de.hf.myfinance.restmodel.EndOfDayPrice;
 import de.hf.myfinance.restmodel.EndOfDayPrices;
 import de.hf.myfinance.securitymetrics.persistence.entities.PriceEntity;
 import de.hf.myfinance.securitymetrics.persistence.repositories.PriceRepository;
+import de.hf.myfinance.securitymetrics.service.SecurityMetricsService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,10 +25,12 @@ public class NewEndOfDayPriceProcessorConfig {
     private final AuditService auditService;
     protected static final String AUDIT_MSG_TYPE = "valueProcessor_Event";
     private final PriceRepository priceRepository;
+    private final SecurityMetricsService securityMetricsService;
 
-    public NewEndOfDayPriceProcessorConfig(AuditService auditService, PriceRepository priceRepository) {
+    public NewEndOfDayPriceProcessorConfig(AuditService auditService, PriceRepository priceRepository, SecurityMetricsService securityMetricsService) {
         this.auditService = auditService;
         this.priceRepository = priceRepository;
+        this.securityMetricsService = securityMetricsService;
     }
 
     @Bean
@@ -45,6 +48,7 @@ public class NewEndOfDayPriceProcessorConfig {
                         priceRepository.findByBusinesskey(event.getData().getInstrumentBusinesskey())
                             .switchIfEmpty(handleNotExistingInstrument(event.getData().getInstrumentBusinesskey()))
                             .flatMap(e -> priceRepository.save(processValueInformation(e, event.getData())))
+                            .flatMap(e -> securityMetricsService.recalcSecurityMetrics(event.getData().getInstrumentBusinesskey()))
                             .block();
                 } else {
                     String errorMessage = "Incorrect event type: " + event.getEventType() + ", expected a Create event";

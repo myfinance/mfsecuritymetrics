@@ -1,5 +1,6 @@
 package de.hf.myfinance.securitymetrics.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import org.springframework.stereotype.Component;
@@ -42,9 +43,14 @@ public class SecurityMetricsService {
                 return Mono.just(keyList);
             })
             .flatMapMany(l->{
-            Flux<SecurityMetrics> bla =  reader.findSecurityMetricByBusinesskeyIn(l);
-            return bla;
+            return reader.findSecurityMetricByBusinesskeyIn(l);
         });
+    }
+
+    public Mono<SecurityMetrics> recalcSecurityMetrics(String businesskey) {
+        return loadSecurityMetrics(businesskey)
+            .switchIfEmpty(Mono.just(initEmptySecurityMetrics(businesskey)))
+            .flatMap(this::validateSecurityMetrics);
     }
 
     public Mono<SecurityMetrics> validateSecurityMetrics(SecurityMetrics securityMetrics) {
@@ -78,8 +84,20 @@ public class SecurityMetricsService {
     }
 
     private Mono<SecurityMetrics> loadSecurityMetrics(SecurityMetrics securityMetrics) {
-        return reader.findSecurityMetricsByBusinesskey(securityMetrics.getBusinesskey())
+        return loadSecurityMetrics(securityMetrics.getBusinesskey())
                 .switchIfEmpty(Mono.just(initSecurityMetrics(securityMetrics)));
+    }
+
+    private Mono<SecurityMetrics> loadSecurityMetrics(String businesskey) {
+        return reader.findSecurityMetricsByBusinesskey(businesskey);
+    }
+
+    private SecurityMetrics initEmptySecurityMetrics(String businesskey) {
+        SecurityMetrics securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey(businesskey);
+        securityMetrics.setFiscalEndDate(LocalDate.MIN);
+        securityMetrics.setCurrencyCode("EUR");
+        return securityMetrics;
     }
 
     private SecurityMetrics initSecurityMetrics(SecurityMetrics newSecurityMetrics) {
