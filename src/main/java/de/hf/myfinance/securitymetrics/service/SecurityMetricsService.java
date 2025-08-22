@@ -33,9 +33,6 @@ public class SecurityMetricsService {
         this.eventHandler = eventHandler;
     }
 
-
-
-    
     public Flux<SecurityMetrics> getSecurityMetrics(){
         return reader.listActiveInstruments().collectList().flatMap(instrumentList->{
                 var keyList = new ArrayList<String>();
@@ -50,7 +47,9 @@ public class SecurityMetricsService {
     public Mono<SecurityMetrics> recalcSecurityMetrics(String businesskey) {
         return loadSecurityMetrics(businesskey)
             .switchIfEmpty(Mono.just(initEmptySecurityMetrics(businesskey)))
-            .flatMap(this::validateSecurityMetrics);
+            .flatMap(this::loadPriceAndCurrency)
+            .flatMap(this::calcSecurityMetrics)
+            .flatMap(this::saveSecurityMetrics);
     }
 
     public Mono<SecurityMetrics> validateSecurityMetrics(SecurityMetrics securityMetrics) {
@@ -97,6 +96,7 @@ public class SecurityMetricsService {
         securityMetrics.setBusinesskey(businesskey);
         securityMetrics.setFiscalEndDate(LocalDate.MIN);
         securityMetrics.setCurrencyCode("EUR");
+        securityMetrics.setLastUpdateTs(LocalDateTime.now());
         return securityMetrics;
     }
 
@@ -141,6 +141,7 @@ public class SecurityMetricsService {
     }
 
     private SecurityMetrics updateBaseValues(SecurityMetrics updatedSecurityMetrics, SecurityMetrics newSecurityMetrics) {
+        updatedSecurityMetrics.setLastUpdateTs(LocalDateTime.now());
         if(newSecurityMetrics.getCapitalExpenditures() != null) {
             updatedSecurityMetrics.setCapitalExpenditures(newSecurityMetrics.getCapitalExpenditures());
         }
@@ -188,6 +189,9 @@ public class SecurityMetricsService {
             && securityMetrics.getIntrinsicValue() != null) {
             securityMetrics.setIntrinsicValueMargin((securityMetrics.getIntrinsicValue() -securityMetrics.getPrice())/securityMetrics.getPrice());
         }
+        securityMetrics = calcPE(securityMetrics);
+        securityMetrics = calcDividendYield(securityMetrics);
+        securityMetrics = calcLynch(securityMetrics);
         
         return Mono.just(securityMetrics);
     }
@@ -206,6 +210,33 @@ public class SecurityMetricsService {
         return securityMetrics;
     }
 
+    private SecurityMetrics calcPE(SecurityMetrics securityMetrics) {
+        if(securityMetrics.getEps() == null || securityMetrics.getPrice() == null) {
+            return securityMetrics;
+        }
+        double pe = securityMetrics.getPrice() / securityMetrics.getEps();
+        securityMetrics.setPe(pe);
+        return securityMetrics;
+    }
+
+    private SecurityMetrics calcDividendYield(SecurityMetrics securityMetrics) {
+        if(securityMetrics.getDividendPerShare() == null || securityMetrics.getPrice() == null) {
+            return securityMetrics;
+        }
+        double dividentYield = securityMetrics.getPrice() * 100 / securityMetrics.getDividendPerShare();
+        securityMetrics.setDividendYield(dividentYield);
+        return securityMetrics;
+    }
+
+    private SecurityMetrics calcLynch(SecurityMetrics securityMetrics) {
+        if(securityMetrics.getDividendYield() == null || securityMetrics.getDilutedEPS5Y() == null || securityMetrics.getPe() == null) {
+            return securityMetrics;
+        }
+        double lynch = (securityMetrics.getDividendYield() + securityMetrics.getDilutedEPS5Y()) / securityMetrics.getPe();
+        securityMetrics.setLynchScore(lynch);
+        return securityMetrics;
+    }
+
     private double discount(double faktor, double value, int years) {
         double result = 0.0;
         for(int exponent = 1; exponent <= years; exponent++) {
@@ -216,7 +247,6 @@ public class SecurityMetricsService {
     }
 
     private Mono<SecurityMetrics> saveSecurityMetrics(SecurityMetrics securityMetrics) {
-        securityMetrics.setLastUpdateTs(LocalDateTime.now());
         auditService.saveMessage("SecurityMetrics validated:businesskey=" + securityMetrics.getBusinesskey() + " desc=" + securityMetrics.getDescription(), Severity.INFO, AUDIT_MSG_TYPE);
         eventHandler.sendInstrumentApprovedEvent(securityMetrics);
         return Mono.just(securityMetrics);
