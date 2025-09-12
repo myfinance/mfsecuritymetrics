@@ -255,7 +255,9 @@ public class SecurityMetricsService {
     private Mono<SecurityMetrics> loadPriceAndCurrency(SecurityMetrics securityMetrics) {
         return reader.findPriceByBusinesskey(securityMetrics.getBusinesskey())
             .switchIfEmpty(Mono.just(new EndOfDayPrice(0.0, securityMetrics.getCurrencyKey())))
-            .flatMap(price -> setPrice(securityMetrics, price));
+            .flatMap(price -> 
+                setPrice(securityMetrics, price)
+                );
     }
 
 
@@ -264,15 +266,19 @@ public class SecurityMetricsService {
         if (fromCurrency.equals(toCurrency)) {
             return Mono.just(value);
         }
-        
-        Mono<Double> fromCurrencyInEur = reader.findPriceByBusinesskey(fromCurrency)
-            .map(price -> price.getValue())
-            .switchIfEmpty(auditService.handleMonoError("No price found for currency:"+fromCurrency, AUDIT_MSG_TYPE, MFMsgKey.UNKNOWN_INSTRUMENT_EXCEPTION).cast(Double.class));
+        Mono<Double> fromCurrencyInEur = Mono.just(1.0);
+        if(!fromCurrency.startsWith("EUR")){
+            fromCurrencyInEur = reader.findPriceByBusinesskey(fromCurrency)
+                .map(price -> price.getValue())
+                .switchIfEmpty(auditService.handleMonoError("No price found for currency:"+fromCurrency, AUDIT_MSG_TYPE, MFMsgKey.UNKNOWN_INSTRUMENT_EXCEPTION).cast(Double.class));
+        }
 
         Mono<Double> toCurrencyInEur = Mono.just(1.0);
-        if(!toCurrency.equals("EUR")) {
+        if(!toCurrency.startsWith("EUR")) {
             toCurrencyInEur = reader.findPriceByBusinesskey(toCurrency)
-                .map(price -> price.getValue())
+                .map(price -> 
+                    price.getValue()
+                )
                 .switchIfEmpty(auditService.handleMonoError("No price found for currency:"+toCurrency, AUDIT_MSG_TYPE, MFMsgKey.UNKNOWN_INSTRUMENT_EXCEPTION).cast(Double.class));
         }
 
@@ -283,13 +289,13 @@ public class SecurityMetricsService {
     private Mono<SecurityMetrics> setPrice(SecurityMetrics securityMetrics, EndOfDayPrice price) {
         if(securityMetrics.getCurrencyKey().equals(price.getCurrencyKey())){
             securityMetrics.setPrice(price.getValue());
+            return Mono.just(securityMetrics);
         } else {
-            convertCurrency(price.getValue(), price.getCurrencyKey(), securityMetrics.getCurrencyKey())
+            return convertCurrency(price.getValue(), price.getCurrencyKey(), securityMetrics.getCurrencyKey())
                 .map(convertedValue -> {
                     securityMetrics.setPrice(convertedValue);
                     return securityMetrics;
                 });
         }
-        return Mono.just(securityMetrics);
     }
 }

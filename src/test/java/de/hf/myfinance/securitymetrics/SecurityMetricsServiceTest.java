@@ -20,6 +20,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import de.hf.myfinance.restmodel.EndOfDayPrice;
+import de.hf.myfinance.restmodel.Instrument;
+import de.hf.myfinance.securitymetrics.persistence.DataReader;
+import org.mockito.Mockito;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import reactor.core.publisher.Mono;
+
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Testcontainers
 @Import({TestChannelBinderConfiguration.class})
@@ -31,6 +38,9 @@ public class SecurityMetricsServiceTest extends EventProcessorTestBase{
     InstrumentRepository instrumentRepository;
     @Autowired
     PriceRepository priceRepository;
+
+    @MockBean
+    private DataReader reader;
 
     @Test
     void convertCurrencyToEur() {
@@ -81,9 +91,47 @@ public class SecurityMetricsServiceTest extends EventProcessorTestBase{
         securityMetrics.setCurrencyKey("EUR");
         securityMetrics.setFiscalEndDate(LocalDate.now());
 
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.empty());
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+
 
         var result = securityMetricsService.validateSecurityMetrics(securityMetrics).block();
         final List<String> messages = getMessages("securityMetricsApproved-out-0");
         assertEquals(1, messages.size());
+    }
+
+    @Test
+    void testConvertCurrency_EURToUSD_returnsConvertedValue() {
+        String fromCurrency = "EUR";
+        String toCurrency = "USD";
+        String businesskey = "test";
+        double value = 100.0;
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey(businesskey);
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test instrument");
+
+        SecurityMetrics securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey(businesskey);
+        securityMetrics.setCurrencyKey(toCurrency);
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+
+        EndOfDayPrice price = new EndOfDayPrice(value, fromCurrency);
+        EndOfDayPrice toCurrencyPrice = new EndOfDayPrice(0.85, toCurrency);
+
+        Mockito.when(reader.findInstrumentByBusinesskey(businesskey)).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey(businesskey)).thenReturn(Mono.empty());
+        Mockito.when(reader.findPriceByBusinesskey(businesskey)).thenReturn(Mono.just(price));
+        Mockito.when(reader.findPriceByBusinesskey(toCurrency)).thenReturn(Mono.just(toCurrencyPrice));
+
+        SecurityMetrics result = securityMetricsService.validateSecurityMetrics(securityMetrics).block();
+
+        assertEquals(value / 0.85, result.getPrice());
     }
 }
