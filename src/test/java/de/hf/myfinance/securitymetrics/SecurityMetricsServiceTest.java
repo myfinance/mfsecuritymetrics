@@ -44,47 +44,13 @@ public class SecurityMetricsServiceTest extends EventProcessorTestBase{
 
     @Test
     void convertCurrencyToEur() {
-        var chf = new InstrumentEntity();
-        chf.setBusinesskey("CHF");
-        chf.setDescription("Schweizer Franken");
-        instrumentRepository.save(chf).block();
 
-        var chfPrice = new PriceEntity();
-        chfPrice.setBusinesskey("CHF");
-        chfPrice.setValue(0.9);
-        priceRepository.save(chfPrice).block();
-
-        var eur = new InstrumentEntity();
+        var eur = new Instrument();
         eur.setBusinesskey("EUR");
         eur.setDescription("Euro");
-        instrumentRepository.save(eur).block();
+        eur.setInstrumentType(InstrumentType.CURRENCY);
+        
 
-        var eurPrice = new PriceEntity();
-        eurPrice.setBusinesskey("EUR");
-        eurPrice.setValue(1.0);
-        priceRepository.save(eurPrice).block();
-
-        var usd = new InstrumentEntity();
-        usd.setBusinesskey("USD");
-        usd.setDescription("US Dollar");
-        instrumentRepository.save(usd).block();
-
-        var usdPrice = new PriceEntity();
-        usdPrice.setBusinesskey("USD");
-        usdPrice.setValue(1.1);
-        priceRepository.save(usdPrice).block();
-
-        var security = new InstrumentEntity();
-        security.setBusinesskey("test");
-        security.setDescription("test");
-        security.setInstrumentType(InstrumentType.EQUITY);
-        instrumentRepository.save(security).block();
-
-        var securityPrice = new PriceEntity();
-        securityPrice.setBusinesskey("test");
-        securityPrice.setValue(100.0);
-        securityPrice.setCurrency("EUR");
-        priceRepository.save(securityPrice).block();
 
         var securityMetrics = new SecurityMetrics();
         securityMetrics.setBusinesskey("test");
@@ -97,10 +63,13 @@ public class SecurityMetricsServiceTest extends EventProcessorTestBase{
         instrument.setDescription("test");
         Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
         Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.empty());
-        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "USDkey")));
+        Mockito.when(reader.findPriceByBusinesskey("USDkey")).thenReturn(Mono.just(new EndOfDayPrice(0.5, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(eur));
 
 
         var result = securityMetricsService.validateSecurityMetrics(securityMetrics).block();
+        assertEquals(50, result.getPrice());
         final List<String> messages = getMessages("securityMetricsApproved-out-0");
         assertEquals(1, messages.size());
     }
@@ -125,10 +94,16 @@ public class SecurityMetricsServiceTest extends EventProcessorTestBase{
         EndOfDayPrice price = new EndOfDayPrice(value, fromCurrency);
         EndOfDayPrice toCurrencyPrice = new EndOfDayPrice(0.85, toCurrency);
 
+        var usd = new Instrument();
+        usd.setBusinesskey("USD");
+        usd.setDescription("US Dollar");
+        usd.setInstrumentType(InstrumentType.CURRENCY);
+
         Mockito.when(reader.findInstrumentByBusinesskey(businesskey)).thenReturn(Mono.just(instrument));
         Mockito.when(reader.findSecurityMetricsByBusinesskey(businesskey)).thenReturn(Mono.empty());
         Mockito.when(reader.findPriceByBusinesskey(businesskey)).thenReturn(Mono.just(price));
         Mockito.when(reader.findPriceByBusinesskey(toCurrency)).thenReturn(Mono.just(toCurrencyPrice));
+        Mockito.when(reader.findInstrumentByBusinesskey("USD")).thenReturn(Mono.just(usd));
 
         SecurityMetrics result = securityMetricsService.validateSecurityMetrics(securityMetrics).block();
 
