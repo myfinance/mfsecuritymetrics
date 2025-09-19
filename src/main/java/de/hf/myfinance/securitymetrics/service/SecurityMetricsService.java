@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import de.hf.framework.audit.AuditService;
 import de.hf.framework.audit.Severity;
 import de.hf.myfinance.exception.MFMsgKey;
+import de.hf.myfinance.restmodel.AdditionalProperties;
 import de.hf.myfinance.restmodel.EndOfDayPrice;
 import de.hf.myfinance.restmodel.Instrument;
 import de.hf.myfinance.restmodel.InstrumentType;
@@ -48,6 +49,7 @@ public class SecurityMetricsService {
         return loadSecurityMetrics(businesskey)
             .switchIfEmpty(Mono.just(initEmptySecurityMetrics(businesskey)))
             .flatMap(this::loadPriceAndCurrency)
+            .flatMap(this::setCurrencyCode)
             .flatMap(this::calcSecurityMetrics)
             .flatMap(this::saveSecurityMetrics);
     }
@@ -78,6 +80,7 @@ public class SecurityMetricsService {
                 return Mono.just(updateBaseValues(updatedSecurityMetrics, securityMetrics));
             })
             .flatMap(this::loadPriceAndCurrency)
+            .flatMap(this::setCurrencyCode)
             .flatMap(this::calcSecurityMetrics)
             .flatMap(this::saveSecurityMetrics);
     }
@@ -250,6 +253,16 @@ public class SecurityMetricsService {
         auditService.saveMessage("SecurityMetrics validated:businesskey=" + securityMetrics.getBusinesskey() + " desc=" + securityMetrics.getDescription(), Severity.INFO, AUDIT_MSG_TYPE);
         eventHandler.sendInstrumentApprovedEvent(securityMetrics);
         return Mono.just(securityMetrics);
+    }
+
+    private Mono<SecurityMetrics> setCurrencyCode(SecurityMetrics securityMetrics) {
+
+        return reader.findInstrumentByBusinesskey(securityMetrics.getCurrencyKey())
+            .map(instrument -> {
+                securityMetrics.setCurrencyCode(instrument.getAdditionalProperties().get(AdditionalProperties.CURRENCYCODE));
+                return securityMetrics;
+            });
+            
     }
 
     private Mono<SecurityMetrics> loadPriceAndCurrency(SecurityMetrics securityMetrics) {
