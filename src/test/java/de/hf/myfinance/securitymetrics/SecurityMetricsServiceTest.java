@@ -2,8 +2,6 @@ package de.hf.myfinance.securitymetrics;
 
 import de.hf.myfinance.restmodel.InstrumentType;
 import de.hf.myfinance.restmodel.SecurityMetrics;
-import de.hf.myfinance.securitymetrics.persistence.entities.InstrumentEntity;
-import de.hf.myfinance.securitymetrics.persistence.entities.PriceEntity;
 import de.hf.myfinance.securitymetrics.persistence.repositories.InstrumentRepository;
 import de.hf.myfinance.securitymetrics.persistence.repositories.PriceRepository;
 import de.hf.myfinance.securitymetrics.service.SecurityMetricsService;
@@ -16,7 +14,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -108,5 +108,187 @@ public class SecurityMetricsServiceTest extends EventProcessorTestBase{
         SecurityMetrics result = securityMetricsService.validateSecurityMetrics(securityMetrics).block();
 
         assertEquals(value / 0.85, result.getPrice());
+    }
+
+    @Test
+    void testRecalcSecurityMetrics_avgFcf() {
+        var securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey("test");
+        securityMetrics.setCurrencyKey("EUR");
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+        Map<Integer, Double> fcf = new HashMap<>();
+        fcf.put(2020, 100.0);
+        fcf.put(2021, 110.0);
+        fcf.put(2022, 120.0);
+        fcf.put(2023, 130.0);
+        fcf.put(2024, 140.0);
+        fcf.put(2019, 90.0);
+        securityMetrics.setHistoricalFreeCashflow(fcf);
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.just(securityMetrics));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(new Instrument()));
+
+
+        var result = securityMetricsService.recalcSecurityMetrics("test").block();
+        assertEquals(120.0, result.getAvgFreeCashflow5Y(), 0.001);
+    }
+
+    @Test
+    void testRecalcSecurityMetrics_avgFcf_lessThan5() {
+        var securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey("test");
+        securityMetrics.setCurrencyKey("EUR");
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+        Map<Integer, Double> fcf = new HashMap<>();
+        fcf.put(2022, 120.0);
+        fcf.put(2023, 130.0);
+        fcf.put(2024, 140.0);
+        securityMetrics.setHistoricalFreeCashflow(fcf);
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.just(securityMetrics));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(new Instrument()));
+
+
+        var result = securityMetricsService.recalcSecurityMetrics("test").block();
+        assertEquals(130.0, result.getAvgFreeCashflow5Y(), 0.001);
+    }
+
+    @Test
+    void testRecalcSecurityMetrics_avgFcf_empty() {
+        var securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey("test");
+        securityMetrics.setCurrencyKey("EUR");
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+        Map<Integer, Double> fcf = new HashMap<>();
+        securityMetrics.setHistoricalFreeCashflow(fcf);
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.just(securityMetrics));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(new Instrument()));
+
+
+        var result = securityMetricsService.recalcSecurityMetrics("test").block();
+        assertEquals(0.0, result.getAvgFreeCashflow5Y(), 0.001);
+    }
+
+    @Test
+    void testRecalcSecurityMetrics_avgFcfGrowth() {
+        var securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey("test");
+        securityMetrics.setCurrencyKey("EUR");
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+        Map<Integer, Double> fcf = new HashMap<>();
+        fcf.put(2020, 100.0);
+        fcf.put(2021, 110.0);
+        fcf.put(2022, 120.0);
+        fcf.put(2023, 130.0);
+        fcf.put(2024, 140.0);
+        fcf.put(2019, 90.0);
+        securityMetrics.setHistoricalFreeCashflow(fcf);
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.just(securityMetrics));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(new Instrument()));
+
+
+        var result = securityMetricsService.recalcSecurityMetrics("test").block();
+        assertEquals(0.0924, result.getAvgFreeCashflowGrowth5Y(), 0.001);
+    }
+
+    @Test
+    void testRecalcSecurityMetrics_avgFcfGrowth_lessThan5() {
+        var securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey("test");
+        securityMetrics.setCurrencyKey("EUR");
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+        Map<Integer, Double> fcf = new HashMap<>();
+        fcf.put(2022, 120.0);
+        fcf.put(2023, 130.0);
+        fcf.put(2024, 140.0);
+        securityMetrics.setHistoricalFreeCashflow(fcf);
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.just(securityMetrics));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(new Instrument()));
+
+
+        var result = securityMetricsService.recalcSecurityMetrics("test").block();
+        assertEquals(0.08, result.getAvgFreeCashflowGrowth5Y(), 0.01);
+    }
+
+    @Test
+    void testRecalcSecurityMetrics_avgFcfGrowth_empty() {
+        var securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey("test");
+        securityMetrics.setCurrencyKey("EUR");
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+        Map<Integer, Double> fcf = new HashMap<>();
+        securityMetrics.setHistoricalFreeCashflow(fcf);
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.just(securityMetrics));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(new Instrument()));
+
+
+        var result = securityMetricsService.recalcSecurityMetrics("test").block();
+        assertEquals(0.0, result.getAvgFreeCashflowGrowth5Y(), 0.001);
+    }
+
+    @Test
+    void testRecalcSecurityMetrics_avgFcfGrowth_withZero() {
+        var securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey("test");
+        securityMetrics.setCurrencyKey("EUR");
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+        Map<Integer, Double> fcf = new HashMap<>();
+        fcf.put(2022, 120.0);
+        fcf.put(2023, 0.0);
+        fcf.put(2024, 140.0);
+        securityMetrics.setHistoricalFreeCashflow(fcf);
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.just(securityMetrics));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(new Instrument()));
+
+
+        var result = securityMetricsService.recalcSecurityMetrics("test").block();
+        assertEquals(-1.0, result.getAvgFreeCashflowGrowth5Y(), 0.001);
     }
 }

@@ -3,6 +3,10 @@ package de.hf.myfinance.securitymetrics.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 
 import de.hf.framework.audit.AuditService;
@@ -178,15 +182,35 @@ public class SecurityMetricsService {
         if(newSecurityMetrics.getBeta() != null) {
             updatedSecurityMetrics.setBeta(newSecurityMetrics.getBeta());
         }
+        updatedSecurityMetrics.setHistoricalNetIncome(updateMap(updatedSecurityMetrics.getHistoricalNetIncome(), newSecurityMetrics.getHistoricalNetIncome()));
+        updatedSecurityMetrics.setHistoricalRevenue(updateMap(updatedSecurityMetrics.getHistoricalRevenue(), newSecurityMetrics.getHistoricalRevenue()));
+        updatedSecurityMetrics.setHistoricalFreeCashflow(updateMap(updatedSecurityMetrics.getHistoricalFreeCashflow(), newSecurityMetrics.getHistoricalFreeCashflow()));
+        updatedSecurityMetrics.setExpectedFreeCashflowPerYear(updateMap(updatedSecurityMetrics.getExpectedFreeCashflowPerYear(), newSecurityMetrics.getExpectedFreeCashflowPerYear()));
+
         setStaticSecurityMetrics(updatedSecurityMetrics, newSecurityMetrics);
         return updatedSecurityMetrics;
+    }
+
+    private Map<Integer, Double> updateMap(Map<Integer, Double> oldMap, Map<Integer, Double> newMap) {
+        if(newMap != null && !newMap.isEmpty()) {
+            if(oldMap==null) {
+                return newMap;
+            } else {
+                oldMap.putAll(newMap);
+            }
+        } return oldMap;
     }
 
     private Mono<SecurityMetrics> calcSecurityMetrics(SecurityMetrics securityMetrics) {
         if(securityMetrics.getCapitalExpenditures() != null && securityMetrics.getOperatingCashflow() != null) {
             securityMetrics.setFreeCashflow(securityMetrics.getOperatingCashflow() - securityMetrics.getCapitalExpenditures());
         }
-        securityMetrics = calcIntrinsicValuePerShare(securityMetrics);
+        securityMetrics.setAvgFreeCashflow5Y(calcAvgFCF(securityMetrics.getHistoricalFreeCashflow()));
+        securityMetrics.setAvgFreeCashflowGrowth5Y(calcAvgFcfGrowth(securityMetrics.getHistoricalFreeCashflow()));
+        securityMetrics.setExpectedFreeCashflow(calcExpectedFreeCashflow(securityMetrics.getFreeCashflow(), securityMetrics.getAvgFreeCashflow5Y()));
+
+        securityMetrics.setIntrinsicValue(calcIntrinsicValuePerShare(securityMetrics)); 
+        
         if(securityMetrics.getPrice() != null 
             && securityMetrics.getPrice() != 0.0
             && securityMetrics.getIntrinsicValue() != null) {
@@ -199,18 +223,70 @@ public class SecurityMetricsService {
         return Mono.just(securityMetrics);
     }
 
-    private SecurityMetrics calcIntrinsicValuePerShare(SecurityMetrics securityMetrics) {
+    private double calcExpectedFreeCashflow(Double freeCashflow, Double avgFreeCashflow5Y) {
+        if(freeCashflow == null && avgFreeCashflow5Y == null) {
+            return 0.0;
+        }
+        if(freeCashflow == null) {
+            return avgFreeCashflow5Y;
+        }
+        if(avgFreeCashflow5Y == null) {
+            return freeCashflow;
+        }
+        return Math.max(freeCashflow, avgFreeCashflow5Y);
+    }   
+
+    private Double calcAvgFCF(Map<Integer, Double> fcf){
+        if (fcf == null || fcf.isEmpty()) {
+            return 0.0;
+        }
+        return fcf.entrySet().stream()
+                .sorted(Map.Entry.<Integer, Double>comparingByKey().reversed())
+                .limit(5)
+                .mapToDouble(Map.Entry::getValue)
+                .average()
+                .orElse(0.0);
+    }
+
+    private Double calcAvgFcfGrowth(Map<Integer, Double> fcf) {
+        if (fcf == null || fcf.size() < 2) {
+            return 0.0;
+        }
+
+        List<Map.Entry<Integer, Double>> sortedEntries = fcf.entrySet().stream()
+                .sorted(Map.Entry.<Integer, Double>comparingByKey().reversed())
+                .collect(Collectors.toList());
+
+        List<Double> growthRates = new ArrayList<>();
+        for (int i = 0; i < Math.min(5, sortedEntries.size() - 1); i++) {
+            Double currentFcf = sortedEntries.get(i).getValue();
+            Double previousFcf = sortedEntries.get(i + 1).getValue();
+
+            if (previousFcf != 0) {
+                double growth = (currentFcf - previousFcf) / Math.abs(previousFcf);
+                growthRates.add(growth);
+            }
+        }
+
+        if (growthRates.isEmpty()) {
+            return 0.0;
+        }
+
+        return growthRates.stream().mapToDouble(d -> d).average().orElse(0.0);
+    }
+
+    private Double calcIntrinsicValuePerShare(SecurityMetrics securityMetrics) {
         if(securityMetrics.getFreeCashflow() == null || securityMetrics.getSharesOutstanding() == null || securityMetrics.getExpectedCashflowGrowth() == null) {
-            return securityMetrics;
+            return 0.0;
         }
         Double discountFaktor = securityMetrics.getExpectedCashflowGrowth()/DISCOUNTFACTOR;
-        Double sumOfDiscountedFreecashflows = discount(discountFaktor, securityMetrics.getFreeCashflow(), 10);
+        Double sumOfDiscountedFreecashflows = discount(discountFaktor, securityMetrics.getExpectedFreeCashflow(), 10);
         Double marketcapIn10Y = securityMetrics.getFreeCashflow() 
             * Math.pow(discountFaktor, 10)
             * securityMetrics.getAvgMarktcapFreeCashflowRatio();
         double intrinsicValue = (sumOfDiscountedFreecashflows + marketcapIn10Y) / securityMetrics.getSharesOutstanding();
         securityMetrics.setIntrinsicValue(intrinsicValue);
-        return securityMetrics;
+        return intrinsicValue;
     }
 
     private SecurityMetrics calcPE(SecurityMetrics securityMetrics) {
