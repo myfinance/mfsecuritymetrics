@@ -291,4 +291,71 @@ public class SecurityMetricsServiceTest extends EventProcessorTestBase{
         var result = securityMetricsService.recalcSecurityMetrics("test").block();
         assertEquals(-1.0, result.getAvgFreeCashflowGrowth5Y(), 0.001);
     }
+
+    @Test
+    void testRecalcSecurityMetrics_intrinsicValue_withoutExpectedFcf() {
+        var securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey("test");
+        securityMetrics.setCurrencyKey("EUR");
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+        securityMetrics.setSharesOutstanding(1000.0);
+        securityMetrics.setAvgMarktcapFreeCashflowRatio(10.0);
+        securityMetrics.setOperatingCashflow(1000.0 );
+        securityMetrics.setCapitalExpenditures(0.0);
+        
+        Map<Integer, Double> expectedFcf = new HashMap<>();
+        for(int i=0; i<10; i++) {
+            expectedFcf.put(i+1, 1000.0 *Math.pow(1.1, i));
+        }
+        securityMetrics.setExpectedFreeCashflow(1000.0);
+        securityMetrics.setExpectedCashflowGrowth(1.1);
+
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.just(securityMetrics));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(new Instrument()));
+
+
+        var result = securityMetricsService.recalcSecurityMetrics("test").block();
+        assertEquals(20, result.getIntrinsicValue(), 0.001);
+    }
+
+    @Test
+    void testRecalcSecurityMetrics_intrinsicValue_withExpectedFcf() {
+                var securityMetrics = new SecurityMetrics();
+        securityMetrics.setBusinesskey("test");
+        securityMetrics.setCurrencyKey("EUR");
+        securityMetrics.setFiscalEndDate(LocalDate.now());
+        securityMetrics.setSharesOutstanding(1000.0);
+        securityMetrics.setAvgMarktcapFreeCashflowRatio(10.0);
+        securityMetrics.setOperatingCashflow(1000.0 );
+        securityMetrics.setCapitalExpenditures(0.0);
+        
+        Map<Integer, Double> expectedFcf = new HashMap<>();
+        for(int i=0; i<10; i++) {
+            expectedFcf.put(i+1, 1000.0 *Math.pow(1.1, i+1));
+        }
+        securityMetrics.setExpectedFreeCashflowPerYear(expectedFcf);
+        securityMetrics.setExpectedFreeCashflow(1000.0);
+        securityMetrics.setExpectedCashflowGrowth(1.1);
+
+
+        Instrument instrument = new Instrument();
+        instrument.setBusinesskey("test");
+        instrument.setInstrumentType(InstrumentType.EQUITY);
+        instrument.setDescription("test");
+        Mockito.when(reader.findInstrumentByBusinesskey("test")).thenReturn(Mono.just(instrument));
+        Mockito.when(reader.findSecurityMetricsByBusinesskey("test")).thenReturn(Mono.just(securityMetrics));
+        Mockito.when(reader.findPriceByBusinesskey("test")).thenReturn(Mono.just(new EndOfDayPrice(100.0, "EUR")));
+        Mockito.when(reader.findInstrumentByBusinesskey("EUR")).thenReturn(Mono.just(new Instrument()));
+
+
+        var result = securityMetricsService.recalcSecurityMetrics("test").block();
+        assertEquals(20, result.getIntrinsicValue(), 0.001);
+    }
 }

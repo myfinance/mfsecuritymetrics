@@ -214,7 +214,15 @@ public class SecurityMetricsService {
         if(securityMetrics.getPrice() != null 
             && securityMetrics.getPrice() != 0.0
             && securityMetrics.getIntrinsicValue() != null) {
+
             securityMetrics.setIntrinsicValueMargin((securityMetrics.getIntrinsicValue() -securityMetrics.getPrice())/securityMetrics.getPrice());
+
+            if(securityMetrics.getTotalLiabilities() != null && securityMetrics.getTotalCash() != null){
+                double liabilitiesPerShare = securityMetrics.getTotalLiabilities() / securityMetrics.getSharesOutstanding();
+                double cashPerShare = securityMetrics.getTotalCash() / securityMetrics.getSharesOutstanding();
+                double evPerShare = securityMetrics.getPrice() + liabilitiesPerShare - cashPerShare;
+                securityMetrics.setIntrinsicValueEVMargin((securityMetrics.getIntrinsicValue() -evPerShare)/evPerShare);
+            }
         }
         securityMetrics = calcPE(securityMetrics);
         securityMetrics = calcDividendYield(securityMetrics);
@@ -276,16 +284,41 @@ public class SecurityMetricsService {
     }
 
     private Double calcIntrinsicValuePerShare(SecurityMetrics securityMetrics) {
-        if(securityMetrics.getFreeCashflow() == null || securityMetrics.getSharesOutstanding() == null || securityMetrics.getExpectedCashflowGrowth() == null) {
+        if (securityMetrics.getSharesOutstanding() == null || securityMetrics.getSharesOutstanding() == 0) {
             return 0.0;
         }
-        Double discountFaktor = securityMetrics.getExpectedCashflowGrowth()/DISCOUNTFACTOR;
-        Double sumOfDiscountedFreecashflows = discount(discountFaktor, securityMetrics.getExpectedFreeCashflow(), 10);
-        Double marketcapIn10Y = securityMetrics.getFreeCashflow() 
-            * Math.pow(discountFaktor, 10)
-            * securityMetrics.getAvgMarktcapFreeCashflowRatio();
-        double intrinsicValue = (sumOfDiscountedFreecashflows + marketcapIn10Y) / securityMetrics.getSharesOutstanding();
-        securityMetrics.setIntrinsicValue(intrinsicValue);
+
+        Double sumOfDiscountedFreecashflows;
+        Double terminalValue;
+
+        if (securityMetrics.getExpectedFreeCashflowPerYear() != null && securityMetrics.getExpectedFreeCashflowPerYear().size() == 10 && securityMetrics.getAvgMarktcapFreeCashflowRatio() != null) {
+            
+            List<Double> fcfList = securityMetrics.getExpectedFreeCashflowPerYear().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
+
+            sumOfDiscountedFreecashflows = 0.0;
+            for (int i = 0; i < 10; i++) {
+                sumOfDiscountedFreecashflows += fcfList.get(i) / Math.pow(DISCOUNTFACTOR, i +1);
+            }
+            terminalValue = (fcfList.get(9) * securityMetrics.getAvgMarktcapFreeCashflowRatio()) / Math.pow(DISCOUNTFACTOR, 10);
+
+        } else {
+            if (securityMetrics.getExpectedFreeCashflow() == null || securityMetrics.getExpectedCashflowGrowth() == null || securityMetrics.getAvgMarktcapFreeCashflowRatio() == null) {
+                return 0.0;
+            }
+            double growth = securityMetrics.getExpectedCashflowGrowth();
+            sumOfDiscountedFreecashflows = 0.0;
+            for (int i = 1; i <= 10; i++) {
+                sumOfDiscountedFreecashflows += (securityMetrics.getExpectedFreeCashflow() * Math.pow(growth, i)) / Math.pow(DISCOUNTFACTOR, i);
+            }
+            
+            double fcfIn10Years = securityMetrics.getExpectedFreeCashflow() * Math.pow(growth, 10);
+            terminalValue = (fcfIn10Years * securityMetrics.getAvgMarktcapFreeCashflowRatio()) / Math.pow(DISCOUNTFACTOR, 10);
+        }
+
+        double intrinsicValue = (sumOfDiscountedFreecashflows + terminalValue) / securityMetrics.getSharesOutstanding();
         return intrinsicValue;
     }
 
@@ -314,15 +347,6 @@ public class SecurityMetricsService {
         double lynch = (securityMetrics.getDividendYield() + securityMetrics.getDilutedEPS5Y()) / securityMetrics.getPe();
         securityMetrics.setLynchScore(lynch);
         return securityMetrics;
-    }
-
-    private double discount(double faktor, double value, int years) {
-        double result = 0.0;
-        for(int exponent = 1; exponent <= years; exponent++) {
-            result += Math.pow(faktor, exponent);
-            exponent++;
-        }
-        return value* result;
     }
 
     private Mono<SecurityMetrics> saveSecurityMetrics(SecurityMetrics securityMetrics) {
