@@ -182,6 +182,9 @@ public class SecurityMetricsService {
         if(newSecurityMetrics.getBeta() != null) {
             updatedSecurityMetrics.setBeta(newSecurityMetrics.getBeta());
         }
+        if(newSecurityMetrics.getTotalCash() != null) {
+            updatedSecurityMetrics.setTotalCash(newSecurityMetrics.getTotalCash());
+        }
         updatedSecurityMetrics.setHistoricalNetIncome(updateMap(updatedSecurityMetrics.getHistoricalNetIncome(), newSecurityMetrics.getHistoricalNetIncome()));
         updatedSecurityMetrics.setHistoricalRevenue(updateMap(updatedSecurityMetrics.getHistoricalRevenue(), newSecurityMetrics.getHistoricalRevenue()));
         updatedSecurityMetrics.setHistoricalFreeCashflow(updateMap(updatedSecurityMetrics.getHistoricalFreeCashflow(), newSecurityMetrics.getHistoricalFreeCashflow()));
