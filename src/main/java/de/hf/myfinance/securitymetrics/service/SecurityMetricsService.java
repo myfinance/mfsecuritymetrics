@@ -185,7 +185,7 @@ public class SecurityMetricsService {
         updatedSecurityMetrics.setHistoricalNetIncome(updateMap(updatedSecurityMetrics.getHistoricalNetIncome(), newSecurityMetrics.getHistoricalNetIncome()));
         updatedSecurityMetrics.setHistoricalRevenue(updateMap(updatedSecurityMetrics.getHistoricalRevenue(), newSecurityMetrics.getHistoricalRevenue()));
         updatedSecurityMetrics.setHistoricalFreeCashflow(updateMap(updatedSecurityMetrics.getHistoricalFreeCashflow(), newSecurityMetrics.getHistoricalFreeCashflow()));
-        updatedSecurityMetrics.setExpectedFreeCashflowPerYear(updateMap(updatedSecurityMetrics.getExpectedFreeCashflowPerYear(), newSecurityMetrics.getExpectedFreeCashflowPerYear()));
+        updatedSecurityMetrics.setExpectedFreeCashflowGrowthPerYear(updateMap(updatedSecurityMetrics.getExpectedFreeCashflowGrowthPerYear(), newSecurityMetrics.getExpectedFreeCashflowGrowthPerYear()));
 
         setStaticSecurityMetrics(updatedSecurityMetrics, newSecurityMetrics);
         return updatedSecurityMetrics;
@@ -291,18 +291,20 @@ public class SecurityMetricsService {
         Double sumOfDiscountedFreecashflows;
         Double terminalValue;
 
-        if (securityMetrics.getExpectedFreeCashflowPerYear() != null && securityMetrics.getExpectedFreeCashflowPerYear().size() == 10 && securityMetrics.getAvgMarktcapFreeCashflowRatio() != null) {
+        if (securityMetrics.getExpectedFreeCashflowGrowthPerYear() != null && securityMetrics.getExpectedFreeCashflowGrowthPerYear().size() == 10 && securityMetrics.getAvgMarktcapFreeCashflowRatio() != null) {
             
-            List<Double> fcfList = securityMetrics.getExpectedFreeCashflowPerYear().entrySet().stream()
+            List<Double> fcfList = securityMetrics.getExpectedFreeCashflowGrowthPerYear().entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
 
             sumOfDiscountedFreecashflows = 0.0;
+            var currentFcf = securityMetrics.getExpectedFreeCashflow();
             for (int i = 0; i < 10; i++) {
-                sumOfDiscountedFreecashflows += fcfList.get(i) / Math.pow(DISCOUNTFACTOR, i +1);
+                currentFcf = currentFcf * fcfList.get(i);
+                sumOfDiscountedFreecashflows += currentFcf / Math.pow(DISCOUNTFACTOR, i +1);
             }
-            terminalValue = (fcfList.get(9) * securityMetrics.getAvgMarktcapFreeCashflowRatio()) / Math.pow(DISCOUNTFACTOR, 10);
+            terminalValue = (currentFcf * securityMetrics.getAvgMarktcapFreeCashflowRatio()) / Math.pow(DISCOUNTFACTOR, 10);
 
         } else {
             if (securityMetrics.getExpectedFreeCashflow() == null || securityMetrics.getExpectedCashflowGrowth() == null || securityMetrics.getAvgMarktcapFreeCashflowRatio() == null) {

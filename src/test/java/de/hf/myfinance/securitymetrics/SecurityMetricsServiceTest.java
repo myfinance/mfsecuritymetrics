@@ -335,12 +335,14 @@ public class SecurityMetricsServiceTest extends EventProcessorTestBase{
         securityMetrics.setAvgMarktcapFreeCashflowRatio(10.0);
         securityMetrics.setOperatingCashflow(1000.0 );
         securityMetrics.setCapitalExpenditures(0.0);
+        securityMetrics.setExpectedFreeCashflow(1000.0);
+        securityMetrics.setExpectedCashflowGrowth(1.1);
         
         Map<Integer, Double> expectedFcf = new HashMap<>();
         for(int i=0; i<10; i++) {
-            expectedFcf.put(i+1, 1000.0 *Math.pow(1.1, i+1));
+            expectedFcf.put(i+1, 1.1);
         }
-        securityMetrics.setExpectedFreeCashflowPerYear(expectedFcf);
+        securityMetrics.setExpectedFreeCashflowGrowthPerYear(expectedFcf);
         securityMetrics.setExpectedFreeCashflow(1000.0);
         securityMetrics.setExpectedCashflowGrowth(1.1);
 
