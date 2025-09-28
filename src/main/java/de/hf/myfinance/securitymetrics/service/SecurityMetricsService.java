@@ -340,7 +340,7 @@ public class SecurityMetricsService {
         if(securityMetrics.getDividendPerShare() == null || securityMetrics.getPrice() == null) {
             return securityMetrics;
         }
-        double dividentYield = securityMetrics.getPrice() * 100 / securityMetrics.getDividendPerShare();
+        double dividentYield = securityMetrics.getDividendPerShare() * 100 / securityMetrics.getPrice();
         securityMetrics.setDividendYield(dividentYield);
         return securityMetrics;
     }
