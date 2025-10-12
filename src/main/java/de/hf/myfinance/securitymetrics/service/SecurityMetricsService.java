@@ -103,6 +103,7 @@ public class SecurityMetricsService {
         securityMetrics.setBusinesskey(businesskey);
         securityMetrics.setFiscalEndDate(LocalDate.MIN);
         securityMetrics.setCurrencyCode("EUR");
+        securityMetrics.setCurrencyKey("6e57417d-54c0-36ae-ae48-2056db072a65");
         securityMetrics.setLastUpdateTs(LocalDateTime.now());
         return securityMetrics;
     }
