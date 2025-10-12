@@ -107,7 +107,6 @@ public class SecurityMetricsService {
         securityMetrics.setLastUpdateTs(LocalDateTime.now());
         return securityMetrics;
     }
-    
 
     private SecurityMetrics initSecurityMetrics(SecurityMetrics newSecurityMetrics) {
         SecurityMetrics securityMetrics = new SecurityMetrics();
