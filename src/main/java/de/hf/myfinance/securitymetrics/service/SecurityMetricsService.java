@@ -322,7 +322,7 @@ public class SecurityMetricsService {
             
             double fcfIn10Years = securityMetrics.getExpectedFreeCashflow() * Math.pow(growth, 10);
             terminalValue = (fcfIn10Years * securityMetrics.getAvgMarktcapFreeCashflowRatio()) / Math.pow(DISCOUNTFACTOR, 10);
-        }
+        } 
 
         double intrinsicValue = (sumOfDiscountedFreecashflows + terminalValue) / securityMetrics.getSharesOutstanding();
         return intrinsicValue;

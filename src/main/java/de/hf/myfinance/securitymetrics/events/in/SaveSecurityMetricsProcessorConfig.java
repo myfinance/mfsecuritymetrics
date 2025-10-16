@@ -10,6 +10,7 @@ import de.hf.myfinance.securitymetrics.persistence.repositories.SecurityMetricsR
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.LocalDate;
 import java.util.function.Consumer;
 
 @Configuration
@@ -34,6 +35,9 @@ public class SaveSecurityMetricsProcessorConfig {
 
                 case CREATE:
                     var securityMetrics = event.getData();
+                    if (securityMetrics.getFiscalEndDate() != null && securityMetrics.getFiscalEndDate().equals(LocalDate.MIN)) {
+                        securityMetrics.setFiscalEndDate(null);
+                    }
                     auditService.saveMessage("Create instrument with ID: "+ securityMetrics.getBusinesskey(), Severity.INFO, AUDIT_MSG_TYPE);
                     var entity = securityMetricsMapper.apiToEntity(securityMetrics);
                     securityMetricsRepository.deleteByBusinesskey(entity.getBusinesskey()).then(securityMetricsRepository.save(entity)).block();
