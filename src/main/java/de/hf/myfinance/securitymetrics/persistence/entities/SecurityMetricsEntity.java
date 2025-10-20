@@ -55,11 +55,6 @@ public class SecurityMetricsEntity {
     Double beta;
     Double tam;
     Double forwardPE;
-    Double minForwardFCF10YCAGR;
-    Double avgForwardFCF10YCAGR;
-    Double maxForwardFCF10YCAGR;
-    
-
 
     //calculated
     Double freeCashflow;
@@ -94,7 +89,7 @@ public class SecurityMetricsEntity {
     Map<Integer, Double> historicalRevenue;
     Map<Integer, Double> historicalNetIncome;
     Map<Integer, Double> historicalFreeCashflow;
-    Map<Integer, Double> expectedFreeCashflowPerYear;// the keys are 1..10 for the next 10 years. Year 1 is next year, so the value is the expectedFreeCashflowfor this year (or the current FCF)* (1+expectedCashflowGrowth)
+    Map<Integer, Double> expectedFreeCashflowGrowthPerYear;// the keys are 1..10 for the next 10 years. Year 1 is next year, so the value is the expectedFreeCashflowfor this year (or the current FCF)* (1+expectedCashflowGrowth)
 
 
     //ranks
@@ -277,30 +272,6 @@ public class SecurityMetricsEntity {
 
     public void setForwardPE(Double forwardPE) {
         this.forwardPE = forwardPE;
-    }
-
-    public Double getMinForwardFCF10YCAGR() {
-        return this.minForwardFCF10YCAGR;
-    }
-
-    public void setMinForwardFCF10YCAGR(Double minForwardFCF10YCAGR) {
-        this.minForwardFCF10YCAGR = minForwardFCF10YCAGR;
-    }
-
-    public Double getAvgForwardFCF10YCAGR() {
-        return this.avgForwardFCF10YCAGR;
-    }
-
-    public void setAvgForwardFCF10YCAGR(Double avgForwardFCF10YCAGR) {
-        this.avgForwardFCF10YCAGR = avgForwardFCF10YCAGR;
-    }
-
-    public Double getMaxForwardFCF10YCAGR() {
-        return this.maxForwardFCF10YCAGR;
-    }
-
-    public void setMaxForwardFCF10YCAGR(Double maxForwardFCF10YCAGR) {
-        this.maxForwardFCF10YCAGR = maxForwardFCF10YCAGR;
     }
 
     public Double getNetIncome() {
@@ -522,12 +493,12 @@ public class SecurityMetricsEntity {
         this.avgFreeCashflowGrowth5Y = avgFreeCashflowGrowth5Y;
     }
 
-    public Map<Integer,Double> getExpectedFreeCashflowPerYear() {
-        return this.expectedFreeCashflowPerYear;
+    public Map<Integer,Double> getExpectedFreeCashflowGrowthPerYear() {
+        return this.expectedFreeCashflowGrowthPerYear;
     }
 
-    public void setExpectedFreeCashflowPerYear(Map<Integer,Double> expectedFreeCashflowPerYear) {
-        this.expectedFreeCashflowPerYear = expectedFreeCashflowPerYear;
+    public void setExpectedFreeCashflowGrowthPerYear(Map<Integer,Double> expectedFreeCashflowGrowthPerYear) {
+        this.expectedFreeCashflowGrowthPerYear = expectedFreeCashflowGrowthPerYear;
     }
 
     public Map<Integer,Double> getHistoricalRevenue() {

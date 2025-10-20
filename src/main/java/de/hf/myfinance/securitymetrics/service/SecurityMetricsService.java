@@ -125,6 +125,8 @@ public class SecurityMetricsService {
         if(src.getExpectedCashflowGrowth() != null) {
             target.setExpectedCashflowGrowth(src.getExpectedCashflowGrowth());
         }
+        target.setExpectedFreeCashflowGrowthPerYear(updateMap(target.getExpectedFreeCashflowGrowthPerYear(), src.getExpectedFreeCashflowGrowthPerYear()));
+
         return target;
     }
 
@@ -189,8 +191,7 @@ public class SecurityMetricsService {
         updatedSecurityMetrics.setHistoricalNetIncome(updateMap(updatedSecurityMetrics.getHistoricalNetIncome(), newSecurityMetrics.getHistoricalNetIncome()));
         updatedSecurityMetrics.setHistoricalRevenue(updateMap(updatedSecurityMetrics.getHistoricalRevenue(), newSecurityMetrics.getHistoricalRevenue()));
         updatedSecurityMetrics.setHistoricalFreeCashflow(updateMap(updatedSecurityMetrics.getHistoricalFreeCashflow(), newSecurityMetrics.getHistoricalFreeCashflow()));
-        updatedSecurityMetrics.setExpectedFreeCashflowGrowthPerYear(updateMap(updatedSecurityMetrics.getExpectedFreeCashflowGrowthPerYear(), newSecurityMetrics.getExpectedFreeCashflowGrowthPerYear()));
-
+        
         setStaticSecurityMetrics(updatedSecurityMetrics, newSecurityMetrics);
         return updatedSecurityMetrics;
     }
