@@ -47,6 +47,7 @@ public class SecurityMetricsEntity {
     //optional
     Double totalAssets;
     Double totalLiabilities;
+    Double shortLongTermDebtTotal;
     Double totalCash;
     Double dilutedEPS5Y;
     Double dividendPerShare;
@@ -540,5 +541,15 @@ public class SecurityMetricsEntity {
     public void setIntrinsicValueEVMargin(Double intrinsicValueEVMargin) {
         this.intrinsicValueEVMargin = intrinsicValueEVMargin;
     }
+
+
+    public Double getShortLongTermDebtTotal() {
+        return this.shortLongTermDebtTotal;
+    }
+
+    public void setShortLongTermDebtTotal(Double shortLongTermDebtTotal) {
+        this.shortLongTermDebtTotal = shortLongTermDebtTotal;
+    }
+
 
 }
