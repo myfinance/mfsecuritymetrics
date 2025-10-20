@@ -173,6 +173,9 @@ public class SecurityMetricsService {
         if(newSecurityMetrics.getTotalLiabilities() != null) {
             updatedSecurityMetrics.setTotalLiabilities(newSecurityMetrics.getTotalLiabilities());
         }
+        if(newSecurityMetrics.getShortLongTermDebtTotal() != null) {
+            updatedSecurityMetrics.setShortLongTermDebtTotal(newSecurityMetrics.getShortLongTermDebtTotal());
+        }
         if(newSecurityMetrics.getDilutedEPS5Y() != null) {
             updatedSecurityMetrics.setDilutedEPS5Y(newSecurityMetrics.getDilutedEPS5Y());
         }
@@ -222,8 +225,8 @@ public class SecurityMetricsService {
 
             securityMetrics.setIntrinsicValueMargin((securityMetrics.getIntrinsicValue() -securityMetrics.getPrice())/securityMetrics.getPrice());
 
-            if(securityMetrics.getTotalLiabilities() != null && securityMetrics.getTotalCash() != null){
-                double liabilitiesPerShare = securityMetrics.getTotalLiabilities() / securityMetrics.getSharesOutstanding();
+            if(securityMetrics.getShortLongTermDebtTotal() != null && securityMetrics.getTotalCash() != null){
+                double liabilitiesPerShare = securityMetrics.getShortLongTermDebtTotal() / securityMetrics.getSharesOutstanding();
                 double cashPerShare = securityMetrics.getTotalCash() / securityMetrics.getSharesOutstanding();
                 double evPerShare = securityMetrics.getPrice() + liabilitiesPerShare - cashPerShare;
                 securityMetrics.setIntrinsicValueEVMargin((securityMetrics.getIntrinsicValue() -evPerShare)/evPerShare);
