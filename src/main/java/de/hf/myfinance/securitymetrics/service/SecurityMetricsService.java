@@ -272,7 +272,7 @@ public class SecurityMetricsService {
 
         securityMetrics.setRevenueGrowthRate(calculateRevenueGrowth(securityMetrics));
 
-        if(securityMetrics.getEbitda() != null && securityMetrics.getRevenue() != null && securityMetrics.getRevenueGrowthRate() != null{
+        if(securityMetrics.getEbitda() != null && securityMetrics.getRevenue() != null && securityMetrics.getRevenueGrowthRate() != null){
             var profitMargit = securityMetrics.getEbitda() * 100 / securityMetrics.getRevenue();
             var ruleOfFourty = profitMargit + securityMetrics.getRevenueGrowthRate();
             securityMetrics.setRuleOfFourty(ruleOfFourty);
