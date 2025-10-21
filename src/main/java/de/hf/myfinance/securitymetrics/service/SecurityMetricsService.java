@@ -185,11 +185,32 @@ public class SecurityMetricsService {
         if(newSecurityMetrics.getSector() != null) {
             updatedSecurityMetrics.setSector(newSecurityMetrics.getSector());
         }
+        if(newSecurityMetrics.getCountry() != null) {
+            updatedSecurityMetrics.setCountry(newSecurityMetrics.getCountry());
+        }
         if(newSecurityMetrics.getBeta() != null) {
             updatedSecurityMetrics.setBeta(newSecurityMetrics.getBeta());
         }
         if(newSecurityMetrics.getTotalCash() != null) {
             updatedSecurityMetrics.setTotalCash(newSecurityMetrics.getTotalCash());
+        }
+        if(newSecurityMetrics.getGoodwill() != null) {
+            updatedSecurityMetrics.setGoodwill(newSecurityMetrics.getGoodwill());
+        }
+        if(newSecurityMetrics.getEbit() != null) {
+            updatedSecurityMetrics.setEbit(newSecurityMetrics.getEbit());
+        }
+        if(newSecurityMetrics.getEbitda() != null) {
+            updatedSecurityMetrics.setEbitda(newSecurityMetrics.getEbitda());
+        }
+        if(newSecurityMetrics.getGrossProfit() != null) {
+            updatedSecurityMetrics.setGrossProfit(newSecurityMetrics.getGrossProfit());
+        }
+        if(newSecurityMetrics.getTotalEquity() != null) {
+            updatedSecurityMetrics.setTotalEquity(newSecurityMetrics.getTotalEquity());
+        }
+        if(newSecurityMetrics.getCurrentLiabilities() != null) {
+            updatedSecurityMetrics.setCurrentLiabilities(newSecurityMetrics.getCurrentLiabilities());
         }
         updatedSecurityMetrics.setHistoricalNetIncome(updateMap(updatedSecurityMetrics.getHistoricalNetIncome(), newSecurityMetrics.getHistoricalNetIncome()));
         updatedSecurityMetrics.setHistoricalRevenue(updateMap(updatedSecurityMetrics.getHistoricalRevenue(), newSecurityMetrics.getHistoricalRevenue()));
@@ -213,6 +234,7 @@ public class SecurityMetricsService {
         if(securityMetrics.getCapitalExpenditures() != null && securityMetrics.getOperatingCashflow() != null) {
             securityMetrics.setFreeCashflow(securityMetrics.getOperatingCashflow() - securityMetrics.getCapitalExpenditures());
         }
+        securityMetrics.setNetIncome(securityMetrics.getEps()*securityMetrics.getSharesOutstanding());
         securityMetrics.setAvgFreeCashflow5Y(calcAvgFCF(securityMetrics.getHistoricalFreeCashflow()));
         securityMetrics.setAvgFreeCashflowGrowth5Y(calcAvgFcfGrowth(securityMetrics.getHistoricalFreeCashflow()));
         securityMetrics.setExpectedFreeCashflow(calcExpectedFreeCashflow(securityMetrics.getFreeCashflow(), securityMetrics.getAvgFreeCashflow5Y()));
@@ -235,6 +257,16 @@ public class SecurityMetricsService {
         securityMetrics = calcPE(securityMetrics);
         securityMetrics = calcDividendYield(securityMetrics);
         securityMetrics = calcLynch(securityMetrics);
+
+        if(securityMetrics.getNetIncome() != null && securityMetrics.getTotalAssets() != null) {
+            securityMetrics.setRoa(securityMetrics.getNetIncome() / securityMetrics.getTotalAssets());
+        }
+        if(securityMetrics.getNetIncome() != null && securityMetrics.getTotalEquity() != null) {
+            securityMetrics.setRoe(securityMetrics.getNetIncome() / securityMetrics.getTotalEquity());
+        }
+        if(securityMetrics.getEbit() != null && securityMetrics.getTotalAssets() != null && securityMetrics.getCurrentLiabilities() != null) {
+            securityMetrics.setRoce(securityMetrics.getEbit() / (securityMetrics.getTotalAssets()-securityMetrics.getCurrentLiabilities()));
+        }
         
         return Mono.just(securityMetrics);
     }
