@@ -125,6 +125,9 @@ public class SecurityMetricsService {
         if(src.getExpectedCashflowGrowth() != null) {
             target.setExpectedCashflowGrowth(src.getExpectedCashflowGrowth());
         }
+        if(src.getDilutedEPS5Y() != null) {
+            target.setDilutedEPS5Y(src.getDilutedEPS5Y());
+        }
         target.setExpectedFreeCashflowGrowthPerYear(updateMap(target.getExpectedFreeCashflowGrowthPerYear(), src.getExpectedFreeCashflowGrowthPerYear()));
 
         return target;
@@ -175,9 +178,6 @@ public class SecurityMetricsService {
         }
         if(newSecurityMetrics.getShortLongTermDebtTotal() != null) {
             updatedSecurityMetrics.setShortLongTermDebtTotal(newSecurityMetrics.getShortLongTermDebtTotal());
-        }
-        if(newSecurityMetrics.getDilutedEPS5Y() != null) {
-            updatedSecurityMetrics.setDilutedEPS5Y(newSecurityMetrics.getDilutedEPS5Y());
         }
         if(newSecurityMetrics.getDividendPerShare() != null) {
             updatedSecurityMetrics.setDividendPerShare(newSecurityMetrics.getDividendPerShare());
