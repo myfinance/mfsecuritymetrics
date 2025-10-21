@@ -234,7 +234,9 @@ public class SecurityMetricsService {
         if(securityMetrics.getCapitalExpenditures() != null && securityMetrics.getOperatingCashflow() != null) {
             securityMetrics.setFreeCashflow(securityMetrics.getOperatingCashflow() - securityMetrics.getCapitalExpenditures());
         }
-        securityMetrics.setNetIncome(securityMetrics.getEps()*securityMetrics.getSharesOutstanding());
+        if(securityMetrics.getEps() != null && securityMetrics.getSharesOutstanding() != null) {
+            securityMetrics.setNetIncome(securityMetrics.getEps()*securityMetrics.getSharesOutstanding());
+        }
         securityMetrics.setAvgFreeCashflow5Y(calcAvgFCF(securityMetrics.getHistoricalFreeCashflow()));
         securityMetrics.setAvgFreeCashflowGrowth5Y(calcAvgFcfGrowth(securityMetrics.getHistoricalFreeCashflow()));
         securityMetrics.setExpectedFreeCashflow(calcExpectedFreeCashflow(securityMetrics.getFreeCashflow(), securityMetrics.getAvgFreeCashflow5Y()));
@@ -266,6 +268,14 @@ public class SecurityMetricsService {
         }
         if(securityMetrics.getEbit() != null && securityMetrics.getTotalAssets() != null && securityMetrics.getCurrentLiabilities() != null) {
             securityMetrics.setRoce(securityMetrics.getEbit() / (securityMetrics.getTotalAssets()-securityMetrics.getCurrentLiabilities()));
+        }
+
+        securityMetrics.setRevenueGrowthRate(calculateRevenueGrowth(securityMetrics));
+
+        if(securityMetrics.getEbitda() != null && securityMetrics.getRevenue() != null && securityMetrics.getRevenueGrowthRate() != null{
+            var profitMargit = securityMetrics.getEbitda() * 100 / securityMetrics.getRevenue();
+            var ruleOfFourty = profitMargit + securityMetrics.getRevenueGrowthRate();
+            securityMetrics.setRuleOfFourty(ruleOfFourty);
         }
         
         return Mono.just(securityMetrics);
@@ -389,6 +399,30 @@ public class SecurityMetricsService {
         double lynch = (securityMetrics.getDividendYield() + securityMetrics.getDilutedEPS5Y()) / securityMetrics.getPe();
         securityMetrics.setLynchScore(lynch);
         return securityMetrics;
+    }
+
+    public Double calculateRevenueGrowth(SecurityMetrics securityMetrics) {
+        if (securityMetrics == null || securityMetrics.getHistoricalNetIncome() == null || securityMetrics.getHistoricalNetIncome().size() < 2) {
+            return 0.0;
+        }
+
+        Map<Integer, Double> historicalNetIncome = securityMetrics.getHistoricalNetIncome();
+
+        List<Integer> sortedYears = historicalNetIncome.keySet().stream()
+                .sorted(java.util.Collections.reverseOrder())
+                .collect(Collectors.toList());
+
+        Integer latestYear = sortedYears.get(0);
+        Integer previousYear = sortedYears.get(1);
+
+        Double latestNetIncome = historicalNetIncome.get(latestYear);
+        Double previousNetIncome = historicalNetIncome.get(previousYear);
+
+        if (previousNetIncome == null || previousNetIncome == 0) {
+            return 0.0;
+        }
+
+        return (latestNetIncome - previousNetIncome) / Math.abs(previousNetIncome);
     }
 
     private Mono<SecurityMetrics> saveSecurityMetrics(SecurityMetrics securityMetrics) {
