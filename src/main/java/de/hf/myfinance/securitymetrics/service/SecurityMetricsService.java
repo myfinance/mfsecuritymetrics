@@ -277,8 +277,8 @@ public class SecurityMetricsService {
         securityMetrics.setRevenueGrowthRate(calculateRevenueGrowth(securityMetrics));
 
         if(securityMetrics.getEbitda() != null && securityMetrics.getRevenue() != null && securityMetrics.getRevenueGrowthRate() != null){
-            var profitMargit = securityMetrics.getEbitda() * 100 / securityMetrics.getRevenue();
-            var ruleOfFourty = profitMargit + securityMetrics.getRevenueGrowthRate()*100;
+            var profitMargin = securityMetrics.getEbitda() * 100 / securityMetrics.getRevenue();
+            var ruleOfFourty = profitMargin + securityMetrics.getRevenueGrowthRate()*100;
             securityMetrics.setRuleOfFourty(ruleOfFourty);
         }
         if(securityMetrics.getTotalAssets() != null && securityMetrics.getTotalLiabilities() != null && securityMetrics.getGoodwill() != null){
@@ -416,27 +416,27 @@ public class SecurityMetricsService {
     }
 
     public Double calculateRevenueGrowth(SecurityMetrics securityMetrics) {
-        if (securityMetrics == null || securityMetrics.getHistoricalNetIncome() == null || securityMetrics.getHistoricalNetIncome().size() < 2) {
+        if (securityMetrics == null || securityMetrics.getRevenue() == null || securityMetrics.getHistoricalRevenue().size() < 2) {
             return 0.0;
         }
 
-        Map<Integer, Double> historicalNetIncome = securityMetrics.getHistoricalNetIncome();
+        Map<Integer, Double> historicalRevenue = securityMetrics.getHistoricalRevenue();
 
-        List<Integer> sortedYears = historicalNetIncome.keySet().stream()
+        List<Integer> sortedYears = historicalRevenue.keySet().stream()
                 .sorted(java.util.Collections.reverseOrder())
                 .collect(Collectors.toList());
 
         Integer latestYear = sortedYears.get(0);
         Integer previousYear = sortedYears.get(1);
 
-        Double latestNetIncome = historicalNetIncome.get(latestYear);
-        Double previousNetIncome = historicalNetIncome.get(previousYear);
+        Double latestRevenue = historicalRevenue.get(latestYear);
+        Double previousRevenue = historicalRevenue.get(previousYear);
 
-        if (previousNetIncome == null || previousNetIncome == 0) {
+        if (previousRevenue == null || previousRevenue == 0) {
             return 0.0;
         }
 
-        return (latestNetIncome - previousNetIncome) / Math.abs(previousNetIncome);
+        return (latestRevenue - previousRevenue) / Math.abs(previousRevenue);
     }
 
     private Mono<SecurityMetrics> saveSecurityMetrics(SecurityMetrics securityMetrics) {
