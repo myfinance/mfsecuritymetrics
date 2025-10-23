@@ -265,13 +265,13 @@ public class SecurityMetricsService {
         securityMetrics = calcLynch(securityMetrics);
 
         if(securityMetrics.getNetIncome() != null && securityMetrics.getTotalAssets() != null) {
-            securityMetrics.setRoa(securityMetrics.getNetIncome() / securityMetrics.getTotalAssets());
+            securityMetrics.setRoa(securityMetrics.getNetIncome() * 100 / securityMetrics.getTotalAssets());
         }
         if(securityMetrics.getNetIncome() != null && securityMetrics.getTotalEquity() != null) {
-            securityMetrics.setRoe(securityMetrics.getNetIncome() / securityMetrics.getTotalEquity());
+            securityMetrics.setRoe(securityMetrics.getNetIncome() * 100/ securityMetrics.getTotalEquity());
         }
         if(securityMetrics.getEbit() != null && securityMetrics.getTotalAssets() != null && securityMetrics.getCurrentLiabilities() != null) {
-            securityMetrics.setRoce(securityMetrics.getEbit() / (securityMetrics.getTotalAssets()-securityMetrics.getCurrentLiabilities()));
+            securityMetrics.setRoce(securityMetrics.getEbit() *100 / (securityMetrics.getTotalAssets()-securityMetrics.getCurrentLiabilities()));
         }
 
         securityMetrics.setRevenueGrowthRate(calculateRevenueGrowth(securityMetrics));
@@ -282,7 +282,7 @@ public class SecurityMetricsService {
             securityMetrics.setRuleOfFourty(ruleOfFourty);
         }
         if(securityMetrics.getTotalAssets() != null && securityMetrics.getTotalLiabilities() != null && securityMetrics.getGoodwill() != null){
-            securityMetrics.setDebtToAssets(securityMetrics.getTotalLiabilities() / (securityMetrics.getTotalAssets()-securityMetrics.getGoodwill()));
+            securityMetrics.setDebtToAssets(securityMetrics.getTotalLiabilities() *100 / (securityMetrics.getTotalAssets()-securityMetrics.getGoodwill()));
         }
         if(securityMetrics.getRevenue() != null && securityMetrics.getSharesOutstanding() != null && evPerShare!=0.0){
             securityMetrics.setPricePerSales(evPerShare*securityMetrics.getSharesOutstanding() / securityMetrics.getRevenue() );
