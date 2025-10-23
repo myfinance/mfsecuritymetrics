@@ -278,7 +278,7 @@ public class SecurityMetricsService {
 
         if(securityMetrics.getEbitda() != null && securityMetrics.getRevenue() != null && securityMetrics.getRevenueGrowthRate() != null){
             var profitMargit = securityMetrics.getEbitda() * 100 / securityMetrics.getRevenue();
-            var ruleOfFourty = profitMargit + securityMetrics.getRevenueGrowthRate();
+            var ruleOfFourty = profitMargit + securityMetrics.getRevenueGrowthRate()*100;
             securityMetrics.setRuleOfFourty(ruleOfFourty);
         }
         if(securityMetrics.getTotalAssets() != null && securityMetrics.getTotalLiabilities() != null && securityMetrics.getGoodwill() != null){
