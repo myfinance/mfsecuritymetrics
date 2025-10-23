@@ -242,6 +242,13 @@ public class SecurityMetricsService {
         securityMetrics.setExpectedFreeCashflow(calcExpectedFreeCashflow(securityMetrics.getFreeCashflow(), securityMetrics.getAvgFreeCashflow5Y()));
 
         securityMetrics.setIntrinsicValue(calcIntrinsicValuePerShare(securityMetrics)); 
+
+        double evPerShare = 0.0;
+        if(securityMetrics.getShortLongTermDebtTotal() != null && securityMetrics.getTotalCash() != null && securityMetrics.getPrice() != null){
+            double liabilitiesPerShare = securityMetrics.getShortLongTermDebtTotal() / securityMetrics.getSharesOutstanding();
+            double cashPerShare = securityMetrics.getTotalCash() / securityMetrics.getSharesOutstanding();
+            evPerShare = securityMetrics.getPrice() + liabilitiesPerShare - cashPerShare;
+        }
         
         if(securityMetrics.getPrice() != null 
             && securityMetrics.getPrice() != 0.0
@@ -249,10 +256,7 @@ public class SecurityMetricsService {
 
             securityMetrics.setIntrinsicValueMargin((securityMetrics.getIntrinsicValue() -securityMetrics.getPrice())/securityMetrics.getPrice());
 
-            if(securityMetrics.getShortLongTermDebtTotal() != null && securityMetrics.getTotalCash() != null){
-                double liabilitiesPerShare = securityMetrics.getShortLongTermDebtTotal() / securityMetrics.getSharesOutstanding();
-                double cashPerShare = securityMetrics.getTotalCash() / securityMetrics.getSharesOutstanding();
-                double evPerShare = securityMetrics.getPrice() + liabilitiesPerShare - cashPerShare;
+            if(evPerShare!=0.0){
                 securityMetrics.setIntrinsicValueEVMargin((securityMetrics.getIntrinsicValue() -evPerShare)/evPerShare);
             }
         }
@@ -276,6 +280,16 @@ public class SecurityMetricsService {
             var profitMargit = securityMetrics.getEbitda() * 100 / securityMetrics.getRevenue();
             var ruleOfFourty = profitMargit + securityMetrics.getRevenueGrowthRate();
             securityMetrics.setRuleOfFourty(ruleOfFourty);
+        }
+        if(securityMetrics.getTotalAssets() != null && securityMetrics.getTotalLiabilities() != null && securityMetrics.getGoodwill() != null){
+            securityMetrics.setDebtToAssets(securityMetrics.getTotalLiabilities() / (securityMetrics.getTotalAssets()-securityMetrics.getGoodwill()));
+        }
+        if(securityMetrics.getRevenue() != null && securityMetrics.getSharesOutstanding() != null && evPerShare!=0.0){
+            securityMetrics.setPricePerSales(evPerShare*securityMetrics.getSharesOutstanding() / securityMetrics.getRevenue() );
+        }
+
+        if(securityMetrics.getRevenue() != null && securityMetrics.getFreeCashflow() != null){
+            securityMetrics.setFcfMargin(securityMetrics.getFreeCashflow() *100/ securityMetrics.getRevenue());
         }
         
         return Mono.just(securityMetrics);
