@@ -416,7 +416,7 @@ public class SecurityMetricsService {
     }
 
     public Double calculateRevenueGrowth(SecurityMetrics securityMetrics) {
-        if (securityMetrics == null || securityMetrics.getRevenue() == null || securityMetrics.getHistoricalRevenue().size() < 2) {
+        if (securityMetrics == null || securityMetrics.getRevenue() == null || securityMetrics.getHistoricalRevenue() == null || securityMetrics.getHistoricalRevenue().size() < 2) {
             return 0.0;
         }
 
