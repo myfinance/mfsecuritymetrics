@@ -128,6 +128,7 @@ public class SecurityMetricsService {
         if(src.getDilutedEPS5Y() != null) {
             target.setDilutedEPS5Y(src.getDilutedEPS5Y());
         }
+        target.setExpectedFreeCashflowOverride(src.getExpectedFreeCashflowOverride());
         target.setExpectedFreeCashflowGrowthPerYear(updateMap(target.getExpectedFreeCashflowGrowthPerYear(), src.getExpectedFreeCashflowGrowthPerYear()));
 
         return target;
@@ -239,7 +240,7 @@ public class SecurityMetricsService {
         }
         securityMetrics.setAvgFreeCashflow5Y(calcAvgFCF(securityMetrics.getHistoricalFreeCashflow()));
         securityMetrics.setAvgFreeCashflowGrowth5Y(calcAvgFcfGrowth(securityMetrics.getHistoricalFreeCashflow()));
-        securityMetrics.setExpectedFreeCashflow(calcExpectedFreeCashflow(securityMetrics.getFreeCashflow(), securityMetrics.getAvgFreeCashflow5Y()));
+        securityMetrics.setExpectedFreeCashflow(calcExpectedFreeCashflow(securityMetrics.getFreeCashflow(), securityMetrics.getAvgFreeCashflow5Y(), securityMetrics.getExpectedFreeCashflowOverride()));
 
         securityMetrics.setIntrinsicValue(calcIntrinsicValuePerShare(securityMetrics)); 
 
@@ -295,7 +296,10 @@ public class SecurityMetricsService {
         return Mono.just(securityMetrics);
     }
 
-    private double calcExpectedFreeCashflow(Double freeCashflow, Double avgFreeCashflow5Y) {
+    private double calcExpectedFreeCashflow(Double freeCashflow, Double avgFreeCashflow5Y, Double freeCashflowOverride) {
+        if(freeCashflowOverride != null && freeCashflowOverride != 0.0) {
+            return freeCashflowOverride;
+        }
         if(freeCashflow == null && avgFreeCashflow5Y == null) {
             return 0.0;
         }
