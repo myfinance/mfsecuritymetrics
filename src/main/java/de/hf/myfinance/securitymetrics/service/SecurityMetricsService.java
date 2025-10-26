@@ -156,6 +156,7 @@ public class SecurityMetricsService {
 
     private SecurityMetrics updateBaseValues(SecurityMetrics updatedSecurityMetrics, SecurityMetrics newSecurityMetrics) {
         updatedSecurityMetrics.setLastUpdateTs(LocalDateTime.now());
+        updatedSecurityMetrics.setLastManualReviewTs(newSecurityMetrics.getLastManualReviewTs());
         if(newSecurityMetrics.getCapitalExpenditures() != null) {
             updatedSecurityMetrics.setCapitalExpenditures(newSecurityMetrics.getCapitalExpenditures());
         }

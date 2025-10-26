@@ -33,6 +33,7 @@ public class SecurityMetricsEntity {
     String sector;
     String country;
     LocalDateTime lastUpdateTs;
+    LocalDateTime lastManualReviewTs;
 
 
     // all values are yearly TTM values
@@ -679,6 +680,14 @@ public class SecurityMetricsEntity {
 
     public void setExpectedFreeCashflowOverride(Double expectedFreeCashflowOverride) {
         this.expectedFreeCashflowOverride = expectedFreeCashflowOverride;
+    }
+
+    public LocalDateTime getLastManualReviewTs() {
+        return this.lastManualReviewTs;
+    }
+
+    public void setLastManualReviewTs(LocalDateTime lastManualReviewTs) {
+        this.lastManualReviewTs = lastManualReviewTs;
     }
 
 }
