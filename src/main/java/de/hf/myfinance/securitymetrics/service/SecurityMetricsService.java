@@ -79,7 +79,6 @@ public class SecurityMetricsService {
                 }
                 if(!securityMetrics.getCurrencyKey().equals(existingMetrics.getCurrencyKey())){
                     updatedSecurityMetrics = initSecurityMetrics(existingMetrics);
-                    setStaticSecurityMetrics(updatedSecurityMetrics, existingMetrics);
                 }
                 return Mono.just(updateBaseValues(updatedSecurityMetrics, securityMetrics));
             })
@@ -115,6 +114,10 @@ public class SecurityMetricsService {
         securityMetrics.setFiscalEndDate(newSecurityMetrics.getFiscalEndDate());
         securityMetrics.setCurrencyKey(newSecurityMetrics.getCurrencyKey());
         securityMetrics.setCurrencyCode(newSecurityMetrics.getCurrencyCode());
+        securityMetrics.setLastUpdateTs(LocalDateTime.now());
+        securityMetrics.setLastManualReviewTs(newSecurityMetrics.getLastManualReviewTs());
+        securityMetrics.setPriceLastUpdateTs(newSecurityMetrics.getPriceLastUpdateTs());
+        setStaticSecurityMetrics(newSecurityMetrics, securityMetrics);
         return securityMetrics;
     }
 
