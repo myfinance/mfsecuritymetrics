@@ -117,7 +117,7 @@ public class SecurityMetricsService {
         securityMetrics.setLastUpdateTs(LocalDateTime.now());
         securityMetrics.setLastManualReviewTs(newSecurityMetrics.getLastManualReviewTs());
         securityMetrics.setPriceLastUpdateTs(newSecurityMetrics.getPriceLastUpdateTs());
-        setStaticSecurityMetrics(newSecurityMetrics, securityMetrics);
+        setStaticSecurityMetrics(securityMetrics, newSecurityMetrics);
         return securityMetrics;
     }
 
