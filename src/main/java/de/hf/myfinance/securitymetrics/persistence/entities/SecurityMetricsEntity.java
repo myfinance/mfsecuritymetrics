@@ -45,6 +45,8 @@ public class SecurityMetricsEntity {
     Double capitalExpenditures;
     Double operatingCashflow;
     Double netIncome;
+    Double operatingIncome;
+    Double operatingIncomeLastYear;
 
     //optional
     Double totalAssets;
@@ -64,6 +66,7 @@ public class SecurityMetricsEntity {
     Double grossProfit;
     Double totalEquity;
     Double currentLiabilities;
+    Boolean hasDividendsOrBuyBacks;
 
     //calculated
     Double freeCashflow;
@@ -109,14 +112,6 @@ public class SecurityMetricsEntity {
     Map<Integer, Double> historicalFreeCashflow;
     Map<Integer, Double> expectedFreeCashflowGrowthPerYear;// the keys are 1..10 for the next 10 years. Year 1 is next year, so the value is the expectedFreeCashflowfor this year (or the current FCF)* (1+expectedCashflowGrowth)
 
-
-    //ranks
-    Integer rankByPE;
-    Integer rankByRoA;
-    Integer rankByRoAAndPE;
-    Integer rankByIntrinsicValueMargin;
-    Integer rankByLynchScore;
-    Integer rankByLynchAndIntrinsicValueMargin;
 
     public String getId() {
         return this.id;
@@ -371,55 +366,6 @@ public class SecurityMetricsEntity {
     public void setRevenueGrowthRate(Double revenueGrowthRate) {
         this.revenueGrowthRate = revenueGrowthRate;
     }
-
-    public Integer getRankByPE() {
-        return this.rankByPE;
-    }
-
-    public void setRankByPE(Integer rankByPE) {
-        this.rankByPE = rankByPE;
-    }
-
-    public Integer getRankByRoA() {
-        return this.rankByRoA;
-    }
-
-    public void setRankByRoA(Integer rankByRoA) {
-        this.rankByRoA = rankByRoA;
-    }
-
-    public Integer getRankByRoAAndPE() {
-        return this.rankByRoAAndPE;
-    }
-
-    public void setRankByRoAAndPE(Integer rankByRoAAndPE) {
-        this.rankByRoAAndPE = rankByRoAAndPE;
-    }
-
-    public Integer getRankByIntrinsicValueMargin() {
-        return this.rankByIntrinsicValueMargin;
-    }
-
-    public void setRankByIntrinsicValueMargin(Integer rankByIntrinsicValueMargin) {
-        this.rankByIntrinsicValueMargin = rankByIntrinsicValueMargin;
-    }
-
-    public Integer getRankByLynchScore() {
-        return this.rankByLynchScore;
-    }
-
-    public void setRankByLynchScore(Integer rankByLynchScore) {
-        this.rankByLynchScore = rankByLynchScore;
-    }
-
-    public Integer getRankByLynchAndIntrinsicValueMargin() {
-        return this.rankByLynchAndIntrinsicValueMargin;
-    }
-
-    public void setRankByLynchAndIntrinsicValueMargin(Integer rankByLynchAndIntrinsicValueMargin) {
-        this.rankByLynchAndIntrinsicValueMargin = rankByLynchAndIntrinsicValueMargin;
-    }
-    
 
     public String getDescription() {
         return this.description;
@@ -688,6 +634,34 @@ public class SecurityMetricsEntity {
 
     public void setLastManualReviewTs(LocalDateTime lastManualReviewTs) {
         this.lastManualReviewTs = lastManualReviewTs;
+    }
+
+    public Double getOperatingIncome() {
+        return this.operatingIncome;
+    }
+
+    public void setOperatingIncome(Double operatingIncome) {
+        this.operatingIncome = operatingIncome;
+    }
+
+    public Double getOperatingIncomeLastYear() {
+        return this.operatingIncomeLastYear;
+    }
+
+    public void setOperatingIncomeLastYear(Double operatingIncomeLastYear) {
+        this.operatingIncomeLastYear = operatingIncomeLastYear;
+    }
+
+    public Boolean isHasDividendsOrBuyBacks() {
+        return this.hasDividendsOrBuyBacks;
+    }
+
+    public Boolean getHasDividendsOrBuyBacks() {
+        return this.hasDividendsOrBuyBacks;
+    }
+
+    public void setHasDividendsOrBuyBacks(Boolean hasDividendsOrBuyBacks) {
+        this.hasDividendsOrBuyBacks = hasDividendsOrBuyBacks;
     }
 
 }

@@ -16,6 +16,7 @@ import de.hf.myfinance.restmodel.AdditionalProperties;
 import de.hf.myfinance.restmodel.EndOfDayPrice;
 import de.hf.myfinance.restmodel.Instrument;
 import de.hf.myfinance.restmodel.InstrumentType;
+import de.hf.myfinance.restmodel.SecurityLifecyclePhase;
 import de.hf.myfinance.restmodel.SecurityMetrics;
 import de.hf.myfinance.securitymetrics.events.out.SecurityMetricsApprovedEventHandler;
 import de.hf.myfinance.securitymetrics.persistence.DataReader;
@@ -217,6 +218,15 @@ public class SecurityMetricsService {
         if(newSecurityMetrics.getCurrentLiabilities() != null) {
             updatedSecurityMetrics.setCurrentLiabilities(newSecurityMetrics.getCurrentLiabilities());
         }
+        if(newSecurityMetrics.getHasDividendsOrBuyBacks() != null) {
+            updatedSecurityMetrics.setHasDividendsOrBuyBacks(newSecurityMetrics.getHasDividendsOrBuyBacks());
+        }
+        if(newSecurityMetrics.getOperatingIncome() != null) {
+            updatedSecurityMetrics.setOperatingIncome(newSecurityMetrics.getOperatingIncome());
+        }
+        if(newSecurityMetrics.getOperatingIncomeLastYear() != null) {
+            updatedSecurityMetrics.setOperatingIncomeLastYear(newSecurityMetrics.getOperatingIncomeLastYear());
+        }
         updatedSecurityMetrics.setHistoricalNetIncome(updateMap(updatedSecurityMetrics.getHistoricalNetIncome(), newSecurityMetrics.getHistoricalNetIncome()));
         updatedSecurityMetrics.setHistoricalRevenue(updateMap(updatedSecurityMetrics.getHistoricalRevenue(), newSecurityMetrics.getHistoricalRevenue()));
         updatedSecurityMetrics.setHistoricalFreeCashflow(updateMap(updatedSecurityMetrics.getHistoricalFreeCashflow(), newSecurityMetrics.getHistoricalFreeCashflow()));
@@ -296,8 +306,36 @@ public class SecurityMetricsService {
         if(securityMetrics.getRevenue() != null && securityMetrics.getFreeCashflow() != null){
             securityMetrics.setFcfMargin(securityMetrics.getFreeCashflow() *100/ securityMetrics.getRevenue());
         }
+
+        calcSecurityLifecycle(securityMetrics);
         
         return Mono.just(securityMetrics);
+    }
+
+    private void calcSecurityLifecycle(SecurityMetrics securityMetrics) {
+        if(securityMetrics.getHasDividendsOrBuyBacks() != null 
+            && securityMetrics.getOperatingIncome() != null 
+            && securityMetrics.getRevenueGrowthRate() != null
+            && securityMetrics.getOperatingIncomeLastYear() != null){
+
+            if(securityMetrics.getHasDividendsOrBuyBacks()){
+                securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.CAPITALRETURN);
+            } else {
+                if(securityMetrics.getOperatingIncome() > 0){
+                    if(securityMetrics.getRevenueGrowthRate() >0){
+                        securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.OPERATINGLEVERAGE);
+                    } else {
+                        securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.DECLINE);
+                    }
+                } else {
+                    if(securityMetrics.getOperatingIncome() > securityMetrics.getOperatingIncomeLastYear()){
+                        securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.HYPERGROWTH);
+                    } else {
+                        securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.STARTUP);
+                    }
+                }
+            }
+        }
     }
 
     private double calcExpectedFreeCashflow(Double freeCashflow, Double avgFreeCashflow5Y, Double freeCashflowOverride) {
