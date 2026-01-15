@@ -259,7 +259,7 @@ public class SecurityMetricsService {
         securityMetrics.setIntrinsicValue(calcIntrinsicValuePerShare(securityMetrics)); 
 
         double evPerShare = 0.0;
-        if(securityMetrics.getShortLongTermDebtTotal() != null && securityMetrics.getTotalCash() != null && securityMetrics.getPrice() != null){
+        if(securityMetrics.getShortLongTermDebtTotal() != null && securityMetrics.getTotalCash() != null && securityMetrics.getPrice() != null && securityMetrics.getSharesOutstanding() != null){
             double liabilitiesPerShare = securityMetrics.getShortLongTermDebtTotal() / securityMetrics.getSharesOutstanding();
             double cashPerShare = securityMetrics.getTotalCash() / securityMetrics.getSharesOutstanding();
             evPerShare = securityMetrics.getPrice() + liabilitiesPerShare - cashPerShare;
