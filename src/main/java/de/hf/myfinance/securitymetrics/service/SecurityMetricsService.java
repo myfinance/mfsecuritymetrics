@@ -134,7 +134,15 @@ public class SecurityMetricsService {
         }
         target.setExpectedFreeCashflowOverride(src.getExpectedFreeCashflowOverride());
         target.setExpectedFreeCashflowGrowthPerYear(updateMap(target.getExpectedFreeCashflowGrowthPerYear(), src.getExpectedFreeCashflowGrowthPerYear()));
-
+        if(src.getSecurityLifecyclePhaseOverride() != null) {
+            target.setSecurityLifecyclePhaseOverride(src.getSecurityLifecyclePhaseOverride());
+        }
+        if(src.getForwardSales() != null) {
+            target.setForwardSales(src.getForwardSales());
+        }
+        if(src.getForwardFCF() != null) {
+            target.setForwardFCF(src.getForwardFCF());
+        }
         return target;
     }
 
@@ -276,8 +284,12 @@ public class SecurityMetricsService {
             }
         }
         securityMetrics = calcPE(securityMetrics);
+        securityMetrics = calcPricePerGrossProfit(securityMetrics);
         securityMetrics = calcDividendYield(securityMetrics);
         securityMetrics = calcLynch(securityMetrics);
+        securityMetrics = calcPriceToForwardFCF(securityMetrics, evPerShare);
+        securityMetrics = calcPriceToFCF(securityMetrics, evPerShare);
+
 
         if(securityMetrics.getNetIncome() != null && securityMetrics.getTotalAssets() != null) {
             securityMetrics.setRoa(securityMetrics.getNetIncome() * 100 / securityMetrics.getTotalAssets());
@@ -319,22 +331,27 @@ public class SecurityMetricsService {
             && securityMetrics.getOperatingIncomeLastYear() != null){
 
             if(securityMetrics.getHasDividendsOrBuyBacks()){
-                securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.CAPITALRETURN);
+                securityMetrics.setSecurityLifecyclePhaseAutoCalculated(SecurityLifecyclePhase.CAPITALRETURN);
             } else {
                 if(securityMetrics.getOperatingIncome() > 0){
                     if(securityMetrics.getRevenueGrowthRate() >0){
-                        securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.OPERATINGLEVERAGE);
+                        securityMetrics.setSecurityLifecyclePhaseAutoCalculated(SecurityLifecyclePhase.OPERATINGLEVERAGE);
                     } else {
-                        securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.DECLINE);
+                        securityMetrics.setSecurityLifecyclePhaseAutoCalculated(SecurityLifecyclePhase.DECLINE);
                     }
                 } else {
                     if(securityMetrics.getOperatingIncome() > securityMetrics.getOperatingIncomeLastYear()){
-                        securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.HYPERGROWTH);
+                        securityMetrics.setSecurityLifecyclePhaseAutoCalculated(SecurityLifecyclePhase.HYPERGROWTH);
                     } else {
-                        securityMetrics.setSecurityLifecyclePhase(SecurityLifecyclePhase.STARTUP);
+                        securityMetrics.setSecurityLifecyclePhaseAutoCalculated(SecurityLifecyclePhase.STARTUP);
                     }
                 }
             }
+        }
+        if(securityMetrics.getSecurityLifecyclePhaseOverride() != null) {
+            securityMetrics.setSecurityLifecyclePhase(securityMetrics.getSecurityLifecyclePhaseOverride());
+        } else {
+            securityMetrics.setSecurityLifecyclePhase(securityMetrics.getSecurityLifecyclePhaseAutoCalculated());
         }
     }
 
@@ -440,6 +457,44 @@ public class SecurityMetricsService {
         }
         double pe = securityMetrics.getPrice() / securityMetrics.getEps();
         securityMetrics.setPe(pe);
+        return securityMetrics;
+    }
+
+    private SecurityMetrics calcPricePerGrossProfit(SecurityMetrics securityMetrics) {
+        if(securityMetrics.getGrossProfit() == null || securityMetrics.getPrice() == null || securityMetrics.getSharesOutstanding() == null || securityMetrics.getSharesOutstanding() == 0 || securityMetrics.getGrossProfit() == 0.0) {
+            return securityMetrics;
+        }
+        double grossProfitPerShare = securityMetrics.getGrossProfit() / securityMetrics.getSharesOutstanding();
+        double pricePerGrossProfit = securityMetrics.getPrice() / grossProfitPerShare;
+        securityMetrics.setPricePerGrossProfit(pricePerGrossProfit);
+        return securityMetrics;
+    }
+
+    private SecurityMetrics calcPriceToForwardFCF(SecurityMetrics securityMetrics, double enterPriceValuePerShare) {
+        if(securityMetrics.getForwardFCF() == null || securityMetrics.getPrice() == null || securityMetrics.getSharesOutstanding() == null || securityMetrics.getSharesOutstanding() == 0 || securityMetrics.getForwardFCF() == 0.0) {
+            return securityMetrics;
+        }
+        double forwardFCFPerShare = securityMetrics.getForwardFCF() / securityMetrics.getSharesOutstanding();
+        double pricePerForwardFCF = securityMetrics.getPrice() / forwardFCFPerShare;
+        securityMetrics.setForwardPriceToFCF(pricePerForwardFCF);
+        if(enterPriceValuePerShare > 0.0){
+           double forwardEvToFCF = enterPriceValuePerShare / forwardFCFPerShare;
+           securityMetrics.setForwardEvToFCF(forwardEvToFCF);
+        }
+        return securityMetrics;
+    }
+
+    private SecurityMetrics calcPriceToFCF(SecurityMetrics securityMetrics, double enterPriceValuePerShare) {
+        if(securityMetrics.getFreeCashflow() == null || securityMetrics.getPrice() == null || securityMetrics.getSharesOutstanding() == null || securityMetrics.getSharesOutstanding() == 0 || securityMetrics.getFreeCashflow() == 0.0) {
+            return securityMetrics;
+        }
+        double freeCashflowPerShare = securityMetrics.getFreeCashflow() / securityMetrics.getSharesOutstanding();
+        double pricePerFCF = securityMetrics.getPrice() / freeCashflowPerShare;
+        securityMetrics.setPriceToFCF(pricePerFCF);
+        if(enterPriceValuePerShare > 0.0){
+           double evToFCF = enterPriceValuePerShare / freeCashflowPerShare;
+           securityMetrics.setEvToFCF(evToFCF);
+        }
         return securityMetrics;
     }
 
