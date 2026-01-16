@@ -29,6 +29,9 @@ public class SecurityMetricsEntity {
     String currencyKey;
     LocalDate fiscalEndDate;
     SecurityLifecyclePhase securityLifecyclePhase;
+    SecurityLifecyclePhase securityLifecyclePhaseOverride;
+    SecurityLifecyclePhase securityLifecyclePhaseAutoCalculated;
+
     RiskProfile riskProfile;
     String sector;
     String country;
@@ -56,7 +59,8 @@ public class SecurityMetricsEntity {
     Double dilutedEPS5Y;
     Double dividendPerShare;
     Double forwardFreeCashflow5YCAGR;
-    Double forwardPriceToSales;
+    Double forwardFCF;
+    Double forwardSales;
     Double beta;
     Double tam;
     Double forwardPE;
@@ -95,7 +99,13 @@ public class SecurityMetricsEntity {
     Double ruleOfFourty;
     Double grossMargin;
     Double pricePerSales;
+    Double forwardPriceToSales;
+    Double pricePerGrossProfit;
     Double fcfMargin;
+    Double priceToFCF;
+    Double forwardPriceToFCF;
+    Double evToFCF;
+    Double forwardEvToFCF;
 
     //config
     Double avgMarktcapFreeCashflowRatio;
@@ -662,6 +672,79 @@ public class SecurityMetricsEntity {
 
     public void setHasDividendsOrBuyBacks(Boolean hasDividendsOrBuyBacks) {
         this.hasDividendsOrBuyBacks = hasDividendsOrBuyBacks;
+    }
+
+
+    public SecurityLifecyclePhase getSecurityLifecyclePhaseOverride() {
+        return this.securityLifecyclePhaseOverride;
+    }
+
+    public void setSecurityLifecyclePhaseOverride(SecurityLifecyclePhase securityLifecyclePhaseOverride) {
+        this.securityLifecyclePhaseOverride = securityLifecyclePhaseOverride;
+    }
+
+    public SecurityLifecyclePhase getSecurityLifecyclePhaseAutoCalculated() {
+        return this.securityLifecyclePhaseAutoCalculated;
+    }
+
+    public void setSecurityLifecyclePhaseAutoCalculated(SecurityLifecyclePhase securityLifecyclePhaseAutoCalculated) {
+        this.securityLifecyclePhaseAutoCalculated = securityLifecyclePhaseAutoCalculated;
+    }
+
+    public Double getForwardFCF() {
+        return this.forwardFCF;
+    }
+
+    public void setForwardFCF(Double forwardFCF) {
+        this.forwardFCF = forwardFCF;
+    }
+
+    public Double getForwardSales() {
+        return this.forwardSales;
+    }
+
+    public void setForwardSales(Double forwardSales) {
+        this.forwardSales = forwardSales;
+    }
+
+    public Double getPricePerGrossProfit() {
+        return this.pricePerGrossProfit;
+    }
+
+    public void setPricePerGrossProfit(Double pricePerGrossProfit) {
+        this.pricePerGrossProfit = pricePerGrossProfit;
+    }
+
+    public Double getPriceToFCF() {
+        return this.priceToFCF;
+    }
+
+    public void setPriceToFCF(Double priceToFCF) {
+        this.priceToFCF = priceToFCF;
+    }
+
+    public Double getForwardPriceToFCF() {
+        return this.forwardPriceToFCF;
+    }
+
+    public void setForwardPriceToFCF(Double forwardPriceToFCF) {
+        this.forwardPriceToFCF = forwardPriceToFCF;
+    }
+
+    public Double getEvToFCF() {
+        return this.evToFCF;
+    }
+
+    public void setEvToFCF(Double evToFCF) {
+        this.evToFCF = evToFCF;
+    }
+
+    public Double getForwardEvToFCF() {
+        return this.forwardEvToFCF;
+    }
+
+    public void setForwardEvToFCF(Double forwardEvToFCF) {
+        this.forwardEvToFCF = forwardEvToFCF;
     }
 
 }
