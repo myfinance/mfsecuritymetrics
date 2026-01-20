@@ -378,15 +378,15 @@ public class SecurityMetricsService {
                 || securityMetrics.getMoatScore() == null  ) {
             return;
         } else if (securityMetrics.getSecurityLifecyclePhase().equals(SecurityLifecyclePhase.CAPITALRETURN)) {
-            if (securityMetrics.getEVPerEarnings() == null 
-                    || securityMetrics.getEVPerEarnings() <= 0.0
+            if (securityMetrics.getEvPerEarnings() == null 
+                    || securityMetrics.getEvPerEarnings() <= 0.0
                     || securityMetrics.getIntrinsicValueEVMargin() == null 
                     || securityMetrics.getIntrinsicValueEVMargin() <= 0.0) {
                 securityMetrics.setOpportunityScoreValue(1000.0);
                 securityMetrics.setOpportunityScore("RED");
                 return;
             }
-            var opportunityScoreValue = securityMetrics.getEVPerEarnings();
+            var opportunityScoreValue = securityMetrics.getEvPerEarnings();
             if(securityMetrics.getMetricScore().equals("YELLOW")) {
                 opportunityScoreValue += 5.0;
             } else if (securityMetrics.getMetricScore().equals("RED")) {
@@ -560,8 +560,8 @@ public class SecurityMetricsService {
         double pe = securityMetrics.getPrice() / securityMetrics.getEps();
         securityMetrics.setPe(pe);
         if (enterPriceValuePerShare > 0.0) {
-            double setEVPerEarnings = enterPriceValuePerShare / securityMetrics.getEps();
-            securityMetrics.setEVPerEarnings(setEVPerEarnings);
+            double setEvPerEarnings = enterPriceValuePerShare / securityMetrics.getEps();
+            securityMetrics.setEvPerEarnings(setEvPerEarnings);
         }
         return securityMetrics;
     }
