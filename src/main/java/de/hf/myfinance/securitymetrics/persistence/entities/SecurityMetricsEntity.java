@@ -34,6 +34,11 @@ public class SecurityMetricsEntity {
     String metricScore;
     String moatScore;
     String riskScore;
+    String growthScore;
+    //green yellow or red depending on opportunityScoreValue
+    String opportunityScore;
+    //calculated from a lifecycle phase specific value e.G:pE with added pennalties for riskScore etc.
+    Double opportunityScoreValue;
     String comment;
 
 
@@ -783,6 +788,30 @@ public class SecurityMetricsEntity {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getGrowthScore() {
+        return this.growthScore;
+    }
+
+    public void setGrowthScore(String growthScore) {
+        this.growthScore = growthScore;
+    }
+
+    public String getOpportunityScore() {
+        return this.opportunityScore;
+    }
+
+    public void setOpportunityScore(String opportunityScore) {
+        this.opportunityScore = opportunityScore;
+    }
+
+    public Double getOpportunityScoreValue() {
+        return this.opportunityScoreValue;
+    }
+
+    public void setOpportunityScoreValue(Double opportunityScoreValue) {
+        this.opportunityScoreValue = opportunityScoreValue;
     }
 
 
