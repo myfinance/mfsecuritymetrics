@@ -371,21 +371,22 @@ public class SecurityMetricsService {
     }
 
     private void calcOpportunityScore(SecurityMetrics securityMetrics) {
-        if (securityMetrics.getSecurityLifecyclePhase() == null                || securityMetrics.getRiskScore() == null
+        if (securityMetrics.getSecurityLifecyclePhase() == null                
+                || securityMetrics.getRiskScore() == null
                 || securityMetrics.getMetricScore() == null
                 || securityMetrics.getGrowthScore() == null
                 || securityMetrics.getMoatScore() == null  ) {
             return;
         } else if (securityMetrics.getSecurityLifecyclePhase().equals(SecurityLifecyclePhase.CAPITALRETURN)) {
-            if (securityMetrics.getPe() == null 
-                    || securityMetrics.getPe() <= 0.0
+            if (securityMetrics.getEVPerEarnings() == null 
+                    || securityMetrics.getEVPerEarnings() <= 0.0
                     || securityMetrics.getIntrinsicValueEVMargin() == null 
                     || securityMetrics.getIntrinsicValueEVMargin() <= 0.0) {
                 securityMetrics.setOpportunityScoreValue(1000.0);
                 securityMetrics.setOpportunityScore("RED");
                 return;
             }
-            var opportunityScoreValue = securityMetrics.getPe();
+            var opportunityScoreValue = securityMetrics.getEVPerEarnings();
             if(securityMetrics.getMetricScore().equals("YELLOW")) {
                 opportunityScoreValue += 5.0;
             } else if (securityMetrics.getMetricScore().equals("RED")) {
