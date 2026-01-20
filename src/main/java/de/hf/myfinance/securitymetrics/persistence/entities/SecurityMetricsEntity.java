@@ -31,6 +31,11 @@ public class SecurityMetricsEntity {
     SecurityLifecyclePhase securityLifecyclePhase;
     SecurityLifecyclePhase securityLifecyclePhaseOverride;
     SecurityLifecyclePhase securityLifecyclePhaseAutoCalculated;
+    String metricScrore;
+    String moatScore;
+    String riskScore;
+    String comment;
+
 
     RiskProfile riskProfile;
     String sector;
@@ -746,5 +751,39 @@ public class SecurityMetricsEntity {
     public void setForwardEvToFCF(Double forwardEvToFCF) {
         this.forwardEvToFCF = forwardEvToFCF;
     }
+
+
+    public String getMetricScrore() {
+        return this.metricScrore;
+    }
+
+    public void setMetricScrore(String metricScrore) {
+        this.metricScrore = metricScrore;
+    }
+
+    public String getMoatScore() {
+        return this.moatScore;
+    }
+
+    public void setMoatScore(String moatScore) {
+        this.moatScore = moatScore;
+    }
+
+    public String getRiskScore() {
+        return this.riskScore;
+    }
+
+    public void setRiskScore(String riskScore) {
+        this.riskScore = riskScore;
+    }
+
+    public String getComment() {
+        return this.comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
 
 }

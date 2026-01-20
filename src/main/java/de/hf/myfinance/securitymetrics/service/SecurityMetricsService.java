@@ -143,6 +143,18 @@ public class SecurityMetricsService {
         if(src.getForwardFCF() != null) {
             target.setForwardFCF(src.getForwardFCF());
         }
+        if(src.getMetricScrore() != null) {
+            target.setMetricScrore(src.getMetricScrore());
+        }
+        if(src.getMoatScore() != null) {
+            target.setMoatScore(src.getMoatScore());
+        }
+        if(src.getRiskScore() != null) {
+            target.setRiskScore(src.getRiskScore());
+        }
+        if(src.getComment() != null) {
+            target.setComment(src.getComment());
+        }
         return target;
     }
 
