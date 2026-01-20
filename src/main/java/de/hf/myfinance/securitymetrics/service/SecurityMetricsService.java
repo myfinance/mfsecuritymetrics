@@ -321,7 +321,7 @@ public class SecurityMetricsService {
                         .setIntrinsicValueEVMargin((securityMetrics.getIntrinsicValue() - evPerShare) / evPerShare);
             }
         }
-        securityMetrics = calcPE(securityMetrics);
+        securityMetrics = calcPE(securityMetrics, evPerShare);
         securityMetrics = calcPricePerGrossProfit(securityMetrics);
         securityMetrics = calcDividendYield(securityMetrics);
         securityMetrics = calcLynch(securityMetrics);
@@ -394,17 +394,17 @@ public class SecurityMetricsService {
             if(securityMetrics.getMoatScore().equals("YELLOW")) {
                 opportunityScoreValue += 5.0;
             } else if (securityMetrics.getMoatScore().equals("RED")) {
-                opportunityScoreValue += 10.0;
+                opportunityScoreValue += 15.0;
             }
             if(securityMetrics.getRiskScore().equals("YELLOW")) {
                 opportunityScoreValue += 5.0;
             } else if (securityMetrics.getRiskScore().equals("RED")) {
-                opportunityScoreValue += 10.0;
+                opportunityScoreValue += 15.0;
             }
             if(securityMetrics.getGrowthScore().equals("YELLOW")) {
                 opportunityScoreValue += 5.0;
             } else if (securityMetrics.getGrowthScore().equals("RED")) {
-                opportunityScoreValue += 10.0;
+                opportunityScoreValue += 15.0;
             }
             securityMetrics.setOpportunityScoreValue(opportunityScoreValue);
             if (opportunityScoreValue < 35.0) {
@@ -552,12 +552,16 @@ public class SecurityMetricsService {
         return intrinsicValue;
     }
 
-    private SecurityMetrics calcPE(SecurityMetrics securityMetrics) {
+    private SecurityMetrics calcPE(SecurityMetrics securityMetrics, double enterPriceValuePerShare) {
         if (securityMetrics.getEps() == null || securityMetrics.getPrice() == null) {
             return securityMetrics;
         }
         double pe = securityMetrics.getPrice() / securityMetrics.getEps();
         securityMetrics.setPe(pe);
+        if (enterPriceValuePerShare > 0.0) {
+            double setEVPerEarnings = enterPriceValuePerShare / securityMetrics.getEps();
+            securityMetrics.setEVPerEarnings(setEVPerEarnings);
+        }
         return securityMetrics;
     }
 

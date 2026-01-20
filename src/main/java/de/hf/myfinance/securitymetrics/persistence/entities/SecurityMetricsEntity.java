@@ -91,6 +91,7 @@ public class SecurityMetricsEntity {
     //average growth of the free cashflow in the last 5 years
     Double avgFreeCashflowGrowth5Y;
     Double pe;
+    Double eVPerEarnings;
     Double roa;
     //return on equity
     Double roe;
@@ -815,4 +816,12 @@ public class SecurityMetricsEntity {
     }
 
 
+    public Double getEVPerEarnings() {
+        return this.eVPerEarnings;
+    }
+
+    public void setEVPerEarnings(Double eVPerEarnings) {
+        this.eVPerEarnings = eVPerEarnings;
+    }
+             
 }
