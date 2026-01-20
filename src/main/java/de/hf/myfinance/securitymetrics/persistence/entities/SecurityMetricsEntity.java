@@ -31,7 +31,7 @@ public class SecurityMetricsEntity {
     SecurityLifecyclePhase securityLifecyclePhase;
     SecurityLifecyclePhase securityLifecyclePhaseOverride;
     SecurityLifecyclePhase securityLifecyclePhaseAutoCalculated;
-    String metricScrore;
+    String metricScore;
     String moatScore;
     String riskScore;
     String comment;
@@ -753,12 +753,12 @@ public class SecurityMetricsEntity {
     }
 
 
-    public String getMetricScrore() {
-        return this.metricScrore;
+    public String getMetricScore() {
+        return this.metricScore;
     }
 
-    public void setMetricScrore(String metricScrore) {
-        this.metricScrore = metricScrore;
+    public void setMetricScore(String metricScore) {
+        this.metricScore = metricScore;
     }
 
     public String getMoatScore() {
