@@ -415,6 +415,42 @@ public class SecurityMetricsService {
             } else {
                 securityMetrics.setOpportunityScore("RED");
             }
+        } else if (securityMetrics.getSecurityLifecyclePhase().equals(SecurityLifecyclePhase.OPERATINGLEVERAGE)) {
+            if (securityMetrics.getForwardEvToFCF() == null 
+                    || securityMetrics.getForwardEvToFCF() <= 0.0) {
+                securityMetrics.setOpportunityScoreValue(1000.0);
+                securityMetrics.setOpportunityScore("RED");
+                return;
+            }
+            var opportunityScoreValue = securityMetrics.getForwardEvToFCF();
+            if(securityMetrics.getMetricScore().equals("YELLOW")) {
+                opportunityScoreValue += 5.0;
+            } else if (securityMetrics.getMetricScore().equals("RED")) {
+                opportunityScoreValue += 10.0;
+            }
+            if(securityMetrics.getMoatScore().equals("YELLOW")) {
+                opportunityScoreValue += 5.0;
+            } else if (securityMetrics.getMoatScore().equals("RED")) {
+                opportunityScoreValue += 15.0;
+            }
+            if(securityMetrics.getRiskScore().equals("YELLOW")) {
+                opportunityScoreValue += 5.0;
+            } else if (securityMetrics.getRiskScore().equals("RED")) {
+                opportunityScoreValue += 15.0;
+            }
+            if(securityMetrics.getGrowthScore().equals("YELLOW")) {
+                opportunityScoreValue += 5.0;
+            } else if (securityMetrics.getGrowthScore().equals("RED")) {
+                opportunityScoreValue += 15.0;
+            }
+            securityMetrics.setOpportunityScoreValue(opportunityScoreValue);
+            if (opportunityScoreValue < 35.0) {
+                securityMetrics.setOpportunityScore("GREEN");
+            } else if (opportunityScoreValue < 50.0) {
+                securityMetrics.setOpportunityScore("YELLOW");
+            } else {
+                securityMetrics.setOpportunityScore("RED");
+            }
         }
     }
 
