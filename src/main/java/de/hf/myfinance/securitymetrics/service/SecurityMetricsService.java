@@ -412,7 +412,7 @@ public class SecurityMetricsService {
                 opportunityScoreValue += 15.0;
             }
             securityMetrics.setOpportunityScoreValue(opportunityScoreValue);
-            if (opportunityScoreValue < 35.0) {
+            if (opportunityScoreValue < 30.0) {
                 securityMetrics.setOpportunityScore("GREEN");
             } else if (opportunityScoreValue < 50.0) {
                 securityMetrics.setOpportunityScore("YELLOW");
@@ -448,7 +448,7 @@ public class SecurityMetricsService {
                 opportunityScoreValue += 15.0;
             }
             securityMetrics.setOpportunityScoreValue(opportunityScoreValue);
-            if (opportunityScoreValue < 35.0) {
+            if (opportunityScoreValue < 30.0) {
                 securityMetrics.setOpportunityScore("GREEN");
             } else if (opportunityScoreValue < 50.0) {
                 securityMetrics.setOpportunityScore("YELLOW");
