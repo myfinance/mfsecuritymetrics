@@ -248,6 +248,9 @@ public class SecurityMetricsService {
         if (newSecurityMetrics.getGrossProfit() != null) {
             updatedSecurityMetrics.setGrossProfit(newSecurityMetrics.getGrossProfit());
         }
+        if (newSecurityMetrics.getForwardEps() != null) {
+            updatedSecurityMetrics.setForwardEps(newSecurityMetrics.getForwardEps());
+        }
         if (newSecurityMetrics.getTotalEquity() != null) {
             updatedSecurityMetrics.setTotalEquity(newSecurityMetrics.getTotalEquity());
         }
@@ -322,6 +325,7 @@ public class SecurityMetricsService {
             }
         }
         securityMetrics = calcPE(securityMetrics, evPerShare);
+        securityMetrics = calcForwardPE(securityMetrics, evPerShare);
         securityMetrics = calcPricePerGrossProfit(securityMetrics);
         securityMetrics = calcDividendYield(securityMetrics);
         securityMetrics = calcLynch(securityMetrics);
@@ -598,6 +602,19 @@ public class SecurityMetricsService {
         if (enterPriceValuePerShare > 0.0) {
             double setEvPerEarnings = enterPriceValuePerShare / securityMetrics.getEps();
             securityMetrics.setEvPerEarnings(setEvPerEarnings);
+        }
+        return securityMetrics;
+    }
+
+    private SecurityMetrics calcForwardPE(SecurityMetrics securityMetrics, double enterPriceValuePerShare) {
+        if (securityMetrics.getForwardEps() == null || securityMetrics.getPrice() == null) {
+            return securityMetrics;
+        }
+        double forwardPe = securityMetrics.getPrice() / securityMetrics.getForwardEps();
+        securityMetrics.setForwardPe(forwardPe);
+        if (enterPriceValuePerShare > 0.0) {
+            double forwardEvPerEarnings = enterPriceValuePerShare / securityMetrics.getForwardEps();
+            securityMetrics.setForwardEvPerEarnings(forwardEvPerEarnings);
         }
         return securityMetrics;
     }

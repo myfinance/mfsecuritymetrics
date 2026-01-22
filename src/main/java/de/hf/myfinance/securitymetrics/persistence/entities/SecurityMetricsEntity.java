@@ -70,6 +70,7 @@ public class SecurityMetricsEntity {
     Double dividendPerShare;
     Double forwardFreeCashflow5YCAGR;
     Double forwardFCF;
+    Double forwardEps;
     Double forwardSales;
     Double beta;
     Double tam;
@@ -91,6 +92,8 @@ public class SecurityMetricsEntity {
     //average growth of the free cashflow in the last 5 years
     Double avgFreeCashflowGrowth5Y;
     Double pe;
+    Double forwardPe; 
+    Double forwardEvPerEarnings;
     Double evPerEarnings;
     Double roa;
     //return on equity
@@ -824,5 +827,29 @@ public class SecurityMetricsEntity {
         this.evPerEarnings = evPerEarnings;
     }
 
+
+    public Double getForwardEps() {
+        return this.forwardEps;
+    }
+
+    public void setForwardEps(Double forwardEps) {
+        this.forwardEps = forwardEps;
+    }
+
+    public Double getForwardPe() {
+        return this.forwardPe;
+    }
+
+    public void setForwardPe(Double forwardPe) {
+        this.forwardPe = forwardPe;
+    }
+
+    public Double getForwardEvPerEarnings() {
+        return this.forwardEvPerEarnings;
+    }
+
+    public void setForwardEvPerEarnings(Double forwardEvPerEarnings) {
+        this.forwardEvPerEarnings = forwardEvPerEarnings;
+    }
              
 }
