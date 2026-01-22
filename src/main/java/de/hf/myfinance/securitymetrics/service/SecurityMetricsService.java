@@ -420,13 +420,13 @@ public class SecurityMetricsService {
                 securityMetrics.setOpportunityScore("RED");
             }
         } else if (securityMetrics.getSecurityLifecyclePhase().equals(SecurityLifecyclePhase.OPERATINGLEVERAGE)) {
-            if (securityMetrics.getForwardEvToFCF() == null 
-                    || securityMetrics.getForwardEvToFCF() <= 0.0) {
+            if (securityMetrics.getForwardEvPerEarnings() == null  
+                    || securityMetrics.getForwardEvPerEarnings() <= 0.0) {
                 securityMetrics.setOpportunityScoreValue(1000.0);
                 securityMetrics.setOpportunityScore("RED");
                 return;
             }
-            var opportunityScoreValue = securityMetrics.getForwardEvToFCF();
+            var opportunityScoreValue = securityMetrics.getForwardEvPerEarnings();
             if(securityMetrics.getMetricScore().equals("YELLOW")) {
                 opportunityScoreValue += 5.0;
             } else if (securityMetrics.getMetricScore().equals("RED")) {
