@@ -40,6 +40,7 @@ public class SecurityMetricsEntity {
     //calculated from a lifecycle phase specific value e.G:pE with added pennalties for riskScore etc.
     Double opportunityScoreValue;
     String comment;
+    String defaultPortfolio;
 
 
     RiskProfile riskProfile;
@@ -851,5 +852,14 @@ public class SecurityMetricsEntity {
     public void setForwardEvPerEarnings(Double forwardEvPerEarnings) {
         this.forwardEvPerEarnings = forwardEvPerEarnings;
     }
-             
+       
+
+    public String getDefaultPortfolio() {
+        return this.defaultPortfolio;
+    }
+
+    public void setDefaultPortfolio(String defaultPortfolio) {
+        this.defaultPortfolio = defaultPortfolio;
+    }
+    
 }

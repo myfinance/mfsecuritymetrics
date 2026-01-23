@@ -168,6 +168,9 @@ public class SecurityMetricsService {
         if (src.getComment() != null) {
             target.setComment(src.getComment());
         }
+        if (src.getDefaultPortfolio() != null) {
+            target.setDefaultPortfolio(src.getDefaultPortfolio());
+        }
         return target;
     }
 
