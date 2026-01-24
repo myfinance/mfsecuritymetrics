@@ -388,7 +388,7 @@ public class SecurityMetricsService {
             if (securityMetrics.getEvPerEarnings() == null 
                     || securityMetrics.getEvPerEarnings() <= 0.0
                     || securityMetrics.getIntrinsicValueEVMargin() == null 
-                    || securityMetrics.getIntrinsicValueEVMargin() <= 0.0) {
+                    || securityMetrics.getIntrinsicValueEVMargin() <= -1.0) {
                 securityMetrics.setOpportunityScoreValue(1000.0);
                 securityMetrics.setOpportunityScore("RED");
                 return;
@@ -413,6 +413,9 @@ public class SecurityMetricsService {
                 opportunityScoreValue += 5.0;
             } else if (securityMetrics.getGrowthScore().equals("RED")) {
                 opportunityScoreValue += 15.0;
+            }
+            if(securityMetrics.getIntrinsicValueEVMargin() <= 0.0) {
+                opportunityScoreValue += 5.0;
             }
             securityMetrics.setOpportunityScoreValue(opportunityScoreValue);
             if (opportunityScoreValue < 30.0) {
