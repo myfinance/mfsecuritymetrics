@@ -153,6 +153,9 @@ public class SecurityMetricsService {
         if (src.getForwardFCF() != null) {
             target.setForwardFCF(src.getForwardFCF());
         }
+        if (src.getForwardEps() != null) {
+            target.setForwardEps(src.getForwardEps());
+        }
         if (src.getMetricScore() != null) {
             target.setMetricScore(src.getMetricScore());
         }
@@ -250,9 +253,6 @@ public class SecurityMetricsService {
         }
         if (newSecurityMetrics.getGrossProfit() != null) {
             updatedSecurityMetrics.setGrossProfit(newSecurityMetrics.getGrossProfit());
-        }
-        if (newSecurityMetrics.getForwardEps() != null) {
-            updatedSecurityMetrics.setForwardEps(newSecurityMetrics.getForwardEps());
         }
         if (newSecurityMetrics.getTotalEquity() != null) {
             updatedSecurityMetrics.setTotalEquity(newSecurityMetrics.getTotalEquity());
