@@ -1,9 +1,9 @@
 server.port: 30035
 server.host: localhost
-# in case you want to run rabbitMq and keycloak on a dev server and not on your local machine like the software componentens(MFcomposite, mfinstrument...)
-#env.host: ${server.host}
 env:
-  host: 192.168.100.73
+  #host: 192.168.100.73
+  # in case you want to run rabbitMq and keycloak on a dev server and not on your local machine like the software componentens(MFcomposite, mfinstrument...)
+  host: ${server.host}
 logging:
   level:
     root: ERROR
